@@ -28,9 +28,9 @@ import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.domain.FixedCost
 import io.github.takano536.kobako.domain.FixedCosts
+import io.github.takano536.kobako.domain.FixedCostsResult
 import io.github.takano536.kobako.domain.scheduleLabel
 import io.github.takano536.kobako.ui.theme.ThemeTokens
-import retrofit2.HttpException
 
 @Composable
 fun FixedCostsScreen(viewModel: AppViewModel) {
@@ -42,25 +42,26 @@ fun FixedCostsScreen(viewModel: AppViewModel) {
         data = null
         unsupported = false
         failed = false
-        repository?.fixedCosts()?.onSuccess { data = it }?.onFailure {
-            unsupported = (it as? HttpException)?.code() == 404
-            failed = !unsupported
+        when (val result = repository?.fixedCosts()) {
+            is FixedCostsResult.Success -> data = result.value
+            FixedCostsResult.Unsupported -> unsupported = true
+            is FixedCostsResult.Failure -> failed = true
+            null -> Unit
         }
     }
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 152.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 152.dp),
     ) {
-        item { Text(stringResource(R.string.nav_fixed_costs), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(vertical = 10.dp)) }
+        item { PageTitle(stringResource(R.string.nav_fixed_costs)) }
         when {
             unsupported -> item { Text(stringResource(R.string.fixed_cost_api_unsupported), modifier = Modifier.padding(vertical = 24.dp)) }
             failed -> item { EmptyMessage(stringResource(R.string.read_error)) }
-            data == null -> item { EmptyMessage(stringResource(R.string.read_error)) }
-            else -> {
+            data != null -> {
                 val fixed = requireNotNull(data)
                 item {
                     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                        Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.moneyNegative)
+                        Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.colors.moneyNegative)
                         Metric(stringResource(R.string.annualized), fixed.annual)
                     }
                 }
@@ -74,16 +75,17 @@ fun FixedCostsScreen(viewModel: AppViewModel) {
 
 @Composable
 private fun FixedCostRow(item: FixedCost) {
+    val colors = ThemeTokens.colors
     Row(
         Modifier.fillMaxWidth().drawBehind {
-            drawLine(ThemeTokens.rule, androidx.compose.ui.geometry.Offset(0f, size.height), androidx.compose.ui.geometry.Offset(size.width, size.height))
+            drawLine(colors.rule, androidx.compose.ui.geometry.Offset(0f, size.height), androidx.compose.ui.geometry.Offset(size.width, size.height))
         }.padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
             Text(item.name, style = MaterialTheme.typography.bodyMedium)
-            Text("${item.accountName}・${item.scheduleLabel()}", color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall)
+            Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, style = MaterialTheme.typography.bodySmall)
         }
-        Text(yen(item.amount), color = ThemeTokens.moneyNegative, style = MaterialTheme.typography.bodyMedium)
+        Text(yen(item.amount), color = colors.moneyNegative, style = MaterialTheme.typography.bodyMedium)
     }
 }

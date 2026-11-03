@@ -27,14 +27,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.takano536.kobako.AppViewModel
+import io.github.takano536.kobako.BuildConfig
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 
 @Composable
 fun SettingsScreen(viewModel: AppViewModel, requestNotifications: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LazyColumn(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 152.dp)) {
-        item { Text(stringResource(R.string.nav_settings), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(vertical = 10.dp)) }
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 152.dp)) {
+        item { PageTitle(stringResource(R.string.nav_settings)) }
         item { SettingsSectionTitle(stringResource(R.string.connection)) }
         item {
             SettingsRow(
@@ -63,9 +64,9 @@ fun SettingsScreen(viewModel: AppViewModel, requestNotifications: () -> Unit) {
             )
         }
         item { SettingsSectionTitle(stringResource(R.string.app_information)) }
-        item { SettingsRow(stringResource(R.string.version), "0.1.0") }
+        item { SettingsRow(stringResource(R.string.version), BuildConfig.VERSION_NAME) }
         item { SettingsRow(stringResource(R.string.license), "AGPL-3.0-only") }
-        item { SettingsRow(stringResource(R.string.source_code), "github.com/takano536/kobako", arrow = true) }
+        item { SettingsRow(stringResource(R.string.source_code), arrow = true) }
     }
 }
 
@@ -94,7 +95,7 @@ private fun SettingsRow(
             }
         }
     }
-    HorizontalDivider(color = ThemeTokens.rule)
+    HorizontalDivider(color = ThemeTokens.colors.rule)
 }
 
 @Composable
@@ -104,17 +105,17 @@ private fun androidx.compose.foundation.layout.RowScope.SettingsContents(
     arrow: Boolean,
     trailing: (@Composable () -> Unit)?,
 ) {
-    Text(label, modifier = Modifier.weight(1f))
+    Text(label, color = ThemeTokens.colors.ink, modifier = Modifier.weight(1f))
     if (value != null) {
         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-            Text(value, color = ThemeTokens.muted, maxLines = 1)
+            Text(value, color = ThemeTokens.colors.muted, maxLines = 1)
         }
     } else {
         Spacer(Modifier.weight(1f))
     }
     if (trailing != null) trailing()
     else Box(Modifier.width(28.dp), contentAlignment = Alignment.CenterEnd) {
-        if (arrow) Text("›", color = ThemeTokens.muted, style = MaterialTheme.typography.titleMedium)
+        if (arrow) Text("›", color = ThemeTokens.colors.muted, style = MaterialTheme.typography.titleMedium)
     }
 }
 
@@ -133,7 +134,7 @@ private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 0.dp),
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(if (selected == key) "●" else "○", color = ThemeTokens.accent, modifier = Modifier.width(32.dp))
+                    Text(if (selected == key) "●" else "○", color = ThemeTokens.colors.accent, modifier = Modifier.width(32.dp))
                     Text(stringResource(label), color = MaterialTheme.colorScheme.onSurface)
                 }
             }

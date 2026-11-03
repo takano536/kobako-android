@@ -1,23 +1,31 @@
 package io.github.takano536.kobako.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -31,6 +39,7 @@ import io.github.takano536.kobako.ui.screens.FixedCostsScreen
 import io.github.takano536.kobako.ui.screens.OverviewScreen
 import io.github.takano536.kobako.ui.screens.SettingsScreen
 import io.github.takano536.kobako.ui.screens.TransactionsScreen
+import io.github.takano536.kobako.ui.theme.ThemeTokens
 
 internal object Routes {
     const val onboarding = "onboarding"
@@ -41,14 +50,14 @@ internal object Routes {
     const val settings = "settings"
 }
 
-private data class NavItem(val route: String, val label: Int, val glyph: String)
+private data class NavItem(val route: String, val label: Int, val icon: Int)
 
 private val navItems = listOf(
-    NavItem(Routes.overview, R.string.nav_overview, "▦"),
-    NavItem(Routes.transactions, R.string.nav_transactions, "≡"),
-    NavItem(Routes.fixedCosts, R.string.nav_fixed_costs, "▤"),
-    NavItem(Routes.balances, R.string.nav_balances, "▥"),
-    NavItem(Routes.settings, R.string.nav_settings, "⚙"),
+    NavItem(Routes.overview, R.string.nav_overview, R.drawable.ic_nav_overview),
+    NavItem(Routes.transactions, R.string.nav_transactions, R.drawable.ic_nav_transactions),
+    NavItem(Routes.fixedCosts, R.string.nav_fixed_costs, R.drawable.ic_nav_fixed),
+    NavItem(Routes.balances, R.string.nav_balances, R.drawable.ic_nav_balances),
+    NavItem(Routes.settings, R.string.nav_settings, R.drawable.ic_nav_settings),
 )
 
 @Composable
@@ -86,14 +95,35 @@ private fun AppShell(
 ) {
     Scaffold(
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.background) {
-                navItems.forEach { item ->
-                    NavigationBarItem(
-                        selected = item.route == selected,
-                        onClick = { nav.navigate(item.route) { launchSingleTop = true } },
-                        icon = { Text(item.glyph, style = MaterialTheme.typography.titleMedium) },
-                        label = { Text(stringResource(item.label), maxLines = 1) },
-                    )
+            Column(
+                Modifier.fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .height(56.dp)
+                    .background(MaterialTheme.colorScheme.background),
+            ) {
+                HorizontalDivider(thickness = 1.dp, color = ThemeTokens.colors.rule)
+                Row(Modifier.fillMaxWidth().height(55.dp)) {
+                    navItems.forEach { item ->
+                        val label = stringResource(item.label)
+                        val selectedColor = if (item.route == selected) ThemeTokens.colors.accent else ThemeTokens.colors.muted
+                        Column(
+                            Modifier.weight(1f).height(55.dp).clickable {
+                                nav.navigate(item.route) {
+                                    popUpTo(Routes.overview)
+                                    launchSingleTop = true
+                                }
+                            },
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(item.icon),
+                                contentDescription = label,
+                                tint = selectedColor,
+                            )
+                            Text(label, color = selectedColor, fontSize = 12.sp, maxLines = 1)
+                        }
+                    }
                 }
             }
         },
@@ -105,11 +135,11 @@ private fun AppShell(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text(stringResource(R.string.demo_active), color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.demo_active), color = ThemeTokens.colors.accent)
                     androidx.compose.material3.TextButton(onClick = {
                         viewModel.exitDemo()
                         nav.navigate(Routes.onboarding) { popUpTo(0) }
-                    }) { Text(stringResource(R.string.demo_exit)) }
+                    }) { Text(stringResource(R.string.demo_exit), color = ThemeTokens.colors.ink) }
                 }
             }
             content()

@@ -29,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,10 +66,10 @@ fun TransactionsScreen(viewModel: AppViewModel) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 152.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 128.dp),
         ) {
             item {
-                Text(stringResource(R.string.nav_transactions), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(vertical = 10.dp))
+                PageTitle(stringResource(R.string.nav_transactions))
                 MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) })
             }
             if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
@@ -80,32 +79,20 @@ fun TransactionsScreen(viewModel: AppViewModel) {
                 items(rows, key = { it.id }) { TransactionRow(it) }
             }
         }
-        AnimatedVisibility(
-            visible = fabVisible,
-            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 88.dp),
-            enter = fadeIn() + slideInVertically { it },
-            exit = fadeOut() + slideOutVertically { it },
-        ) {
-            FloatingActionButton(
-                onClick = { /* Read-only MVP: registration is intentionally not implemented. */ },
-                containerColor = ThemeTokens.accent,
-                contentColor = Color.White,
-                modifier = Modifier.size(56.dp),
-            ) { Text("+", style = MaterialTheme.typography.headlineSmall) }
-        }
+        RegisterFab(fabVisible, Modifier.align(Alignment.BottomEnd))
     }
 }
 
 @Composable private fun DateHeader(date: LocalDate) {
-    Text(date.format(DateTimeFormatter.ofPattern("M月d日")), color = ThemeTokens.muted, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
+    Text(date.format(DateTimeFormatter.ofPattern("M月d日")), color = ThemeTokens.colors.muted, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
 }
 
 @Composable private fun TransactionRow(transaction: Transaction) {
     Row(Modifier.fillMaxWidth().padding(vertical = 9.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(transaction.category)
-            Text(listOfNotNull(transaction.account, transaction.memo).joinToString("・"), color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall)
+            Text(listOfNotNull(transaction.account, transaction.memo).joinToString("・"), color = ThemeTokens.colors.muted, style = MaterialTheme.typography.bodySmall)
         }
-        Text(signedYen(transaction.amount), color = if (transaction.amount < 0) ThemeTokens.moneyNegative else ThemeTokens.moneyPositive)
+        Text(signedYen(transaction.amount), color = if (transaction.amount < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.moneyPositive)
     }
 }

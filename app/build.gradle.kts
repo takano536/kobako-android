@@ -67,5 +67,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines)
     testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines)
+    testImplementation(libs.okhttp.mockwebserver)
 }

@@ -41,7 +41,7 @@ fun OnboardingScreen(viewModel: AppViewModel) {
     ) {
         Text("kobako", style = androidx.compose.material3.MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Medium)
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.onboarding_tagline), color = ThemeTokens.muted)
+        Text(stringResource(R.string.onboarding_tagline), color = ThemeTokens.colors.muted)
         Spacer(Modifier.height(32.dp))
         OutlinedTextField(
             value = url,
@@ -67,7 +67,7 @@ fun OnboardingScreen(viewModel: AppViewModel) {
         )
         state.error?.let {
             Spacer(Modifier.height(8.dp))
-            Text(it, color = ThemeTokens.moneyNegative)
+            Text(it, color = ThemeTokens.colors.moneyNegative)
         }
         Spacer(Modifier.height(20.dp))
         Button(

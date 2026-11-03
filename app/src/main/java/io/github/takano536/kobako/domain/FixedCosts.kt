@@ -21,6 +21,12 @@ data class FixedCosts(
     val items: List<FixedCost>,
 )
 
+sealed interface FixedCostsResult {
+    data class Success(val value: FixedCosts) : FixedCostsResult
+    data object Unsupported : FixedCostsResult
+    data class Failure(val cause: Throwable) : FixedCostsResult
+}
+
 /**
  * Keeps the mock's compact Japanese schedule labels while tolerating malformed dates.
  * The API may send a timestamp or an invalid value; callers must never crash while

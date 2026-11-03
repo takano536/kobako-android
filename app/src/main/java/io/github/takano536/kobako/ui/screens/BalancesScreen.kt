@@ -36,15 +36,14 @@ fun BalancesScreen(viewModel: AppViewModel) {
         failed = false
         repository?.balances()?.onSuccess { balances = it }?.onFailure { failed = true }
     }
-    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 152.dp)) {
-        item { Text(stringResource(R.string.nav_balances), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(vertical = 10.dp)) }
-        if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 152.dp)) {
+        item { PageTitle(stringResource(R.string.nav_balances)) }
         balances?.let { data ->
             item {
                 Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Metric(stringResource(R.string.assets), data.summary.assets)
-                    Metric(stringResource(R.string.liabilities), data.summary.liabilities, ThemeTokens.moneyNegative)
-                    Metric(stringResource(R.string.net_assets), data.summary.net, ThemeTokens.moneyPositive)
+                    Metric(stringResource(R.string.liabilities), data.summary.liabilities, ThemeTokens.colors.moneyNegative)
+                    Metric(stringResource(R.string.net_assets), data.summary.net, ThemeTokens.colors.moneyPositive)
                 }
             }
             data.groups.forEach { group ->
@@ -59,8 +58,8 @@ private fun AccountRow(account: BalanceAccount) {
     Row(Modifier.fillMaxWidth().padding(vertical = 11.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         Column(Modifier.weight(1f)) {
             Text(account.name)
-            account.scheduledAmount?.let { Text(stringResource(R.string.scheduled_payment) + " " + yen(it), color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall) }
+            account.scheduledAmount?.let { Text(stringResource(R.string.scheduled_payment) + " " + yen(it), color = ThemeTokens.colors.muted, style = MaterialTheme.typography.bodySmall) }
         }
-        Text(yen(account.balance), color = if (account.balance < 0) ThemeTokens.moneyNegative else MaterialTheme.colorScheme.onSurface)
+        Text(yen(account.balance), color = if (account.balance < 0) ThemeTokens.colors.moneyNegative else MaterialTheme.colorScheme.onSurface)
     }
 }

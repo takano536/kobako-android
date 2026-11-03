@@ -11,7 +11,13 @@ class ApiRepository(private val api: KobakoApi) : KobakoRepository {
     override suspend fun summary(month: String) = runCatching { api.summary(month).toDomain() }
     override suspend fun balances() = runCatching { api.balances().toDomain() }
     override suspend fun transactions(month: String) = runCatching { api.transactions(month).items.map { it.toDomain() } }
-    override suspend fun fixedCosts() = runCatching { api.fixedCosts().toDomain() }
+    override suspend fun fixedCosts(): FixedCostsResult = try {
+        FixedCostsResult.Success(api.fixedCosts().toDomain())
+    } catch (error: retrofit2.HttpException) {
+        if (error.code() == 404) FixedCostsResult.Unsupported else FixedCostsResult.Failure(error)
+    } catch (error: Throwable) {
+        FixedCostsResult.Failure(error)
+    }
 }
 
 class DemoRepository(private val today: LocalDate = LocalDate.now()) : KobakoRepository {
@@ -34,7 +40,7 @@ class DemoRepository(private val today: LocalDate = LocalDate.now()) : KobakoRep
         BalanceGroup("電子マネー", "electronic_money", listOf(BalanceAccount(4, "Suica", "electronic_money", 12000, null, null, null, null))),
     )))
     override suspend fun transactions(month: String) = Result.success(tx)
-    override suspend fun fixedCosts() = Result.success(FixedCosts(
+    override suspend fun fixedCosts() = FixedCostsResult.Success(FixedCosts(
         monthly = 104300,
         annual = 1251600,
         items = listOf(

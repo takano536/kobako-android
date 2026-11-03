@@ -34,7 +34,7 @@ class PaymentWorker(private val context: Context, params: WorkerParameters) : Co
         return Result.success()
     }
     private fun markIfNew(cardId: Long, dueOn: LocalDate): Boolean { val key = "$cardId:$dueOn"; val prefs = context.getSharedPreferences("notification_records", Context.MODE_PRIVATE); if (prefs.getBoolean(key, false)) return false; prefs.edit().putBoolean(key, true).apply(); return true }
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "NotificationPermission")
     private fun notify(id: Long) {
         if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
         if (Build.VERSION.SDK_INT >= 26) context.getSystemService(NotificationManager::class.java).createNotificationChannel(NotificationChannel("payments", "支払い", NotificationManager.IMPORTANCE_DEFAULT).apply { lockscreenVisibility = Notification.VISIBILITY_PRIVATE })

@@ -5,13 +5,27 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val appVersionName = "0.1.0" // x-release-please-version
+val appVersionCode = appVersionName
+    .substringBefore('-')
+    .split('.')
+    .let { (major, minor, patch) ->
+        major.toInt() * 10000 + minor.toInt() * 100 + patch.toInt()
+    }
+
 val releaseKeystoreFile = System.getenv("KEYSTORE_FILE")
 val releaseKeystorePassword = System.getenv("KEYSTORE_PASSWORD")
 val releaseKeyAlias = System.getenv("KEY_ALIAS")
 val releaseKeyPassword = System.getenv("KEY_PASSWORD")
 
 android { namespace = "io.github.takano536.kobako"; compileSdk = 36; buildToolsVersion = "36.0.0"
-    defaultConfig { applicationId = "io.github.takano536.kobako"; minSdk = 26; targetSdk = 36; versionCode = 1; versionName = "0.1.0" }
+    defaultConfig {
+        applicationId = "io.github.takano536.kobako"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = appVersionCode
+        versionName = appVersionName
+    }
     signingConfigs {
         if (releaseKeystoreFile != null) {
             create("release") {

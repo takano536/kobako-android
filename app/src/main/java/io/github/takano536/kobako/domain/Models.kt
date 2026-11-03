@@ -18,4 +18,5 @@ interface KobakoRepository {
     suspend fun summary(month: String): Result<Summary>
     suspend fun balances(): Result<Balances>
     suspend fun transactions(month: String): Result<List<Transaction>>
+    suspend fun fixedCosts(): Result<FixedCosts>
 }

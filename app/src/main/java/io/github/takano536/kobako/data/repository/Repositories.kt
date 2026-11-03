@@ -11,6 +11,7 @@ class ApiRepository(private val api: KobakoApi) : KobakoRepository {
     override suspend fun summary(month: String) = runCatching { api.summary(month).toDomain() }
     override suspend fun balances() = runCatching { api.balances().toDomain() }
     override suspend fun transactions(month: String) = runCatching { api.transactions(month).items.map { it.toDomain() } }
+    override suspend fun fixedCosts() = runCatching { api.fixedCosts().toDomain() }
 }
 
 class DemoRepository(private val today: LocalDate = LocalDate.now()) : KobakoRepository {
@@ -33,4 +34,13 @@ class DemoRepository(private val today: LocalDate = LocalDate.now()) : KobakoRep
         BalanceGroup("電子マネー", "electronic_money", listOf(BalanceAccount(4, "Suica", "electronic_money", 12000, null, null, null, null))),
     )))
     override suspend fun transactions(month: String) = Result.success(tx)
+    override suspend fun fixedCosts() = Result.success(FixedCosts(
+        monthly = 104300,
+        annual = 1251600,
+        items = listOf(
+            FixedCost(1, "住居", "住居", "生活費口座", 85000, 27, 1, "month", today.withMonth(1).withDayOfMonth(1)),
+            FixedCost(2, "水道・光熱", "水道・光熱", "生活費口座", 12000, 8, 1, "month", today.withMonth(1).withDayOfMonth(1)),
+            FixedCost(3, "通信", "通信", "クレジットカード", 7300, 5, 1, "month", today.withMonth(1).withDayOfMonth(1)),
+        ),
+    ))
 }

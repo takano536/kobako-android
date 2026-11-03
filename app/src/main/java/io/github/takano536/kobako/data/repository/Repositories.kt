@@ -10,7 +10,7 @@ class ApiRepository(private val api: KobakoApi) : KobakoRepository {
     override suspend fun connect() = runCatching { api.info().let { ServerInfo(it.name, it.apiVersion, Features(it.features.summary, it.features.balances)) } }
     override suspend fun summary(month: String) = runCatching { api.summary(month).toDomain() }
     override suspend fun balances() = runCatching { api.balances().toDomain() }
-    override suspend fun transactions(month: String) = runCatching { api.transactions(month).map { it.toDomain() } }
+    override suspend fun transactions(month: String) = runCatching { api.transactions(month).items.map { it.toDomain() } }
 }
 
 class DemoRepository(private val today: LocalDate = LocalDate.now()) : KobakoRepository {

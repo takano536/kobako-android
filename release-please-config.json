@@ -8,6 +8,7 @@
   "packages": {
     ".": {
       "release-type": "simple",
+      "draft": false,
       "extra-files": [
         {
           "type": "generic",

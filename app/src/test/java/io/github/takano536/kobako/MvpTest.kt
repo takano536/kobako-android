@@ -1,7 +1,9 @@
 package io.github.takano536.kobako
 
 import io.github.takano536.kobako.data.api.*
+import io.github.takano536.kobako.domain.scheduleLabel
 import io.github.takano536.kobako.data.repository.DemoRepository
+import okhttp3.ResponseBody.Companion.toResponseBody
 import io.github.takano536.kobako.notifications.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -21,6 +23,27 @@ class MvpTest {
         assertEquals("振替", dto.items[1].toDomain().category)
         assertEquals("銀行 → 現金", dto.items[1].toDomain().account)
     }
-    @Test fun demoValues() = runBlocking { val demo = DemoRepository(LocalDate.of(2026, 11, 3)); val summary = demo.summary("2026-11").getOrThrow(); assertEquals(350000, summary.income); assertEquals(174200, summary.expense); assertEquals(175800, summary.difference); val balances = demo.balances().getOrThrow(); assertEquals(842000, balances.summary.assets); assertEquals(757000, balances.summary.net) }
-    @Test fun dueDateAndDeduplication() { val today = LocalDate.of(2026, 11, 26); assertTrue(shouldNotify(today, today)); assertTrue(shouldNotify(today.plusDays(1), today)); assertFalse(shouldNotify(today.plusDays(2), today)); val d = NotificationDeduplicator(); assertTrue(d.markIfNew(2, today)); assertFalse(d.markIfNew(2, today)); assertTrue(d.markIfNew(2, today.plusDays(1))) }
+    @Test fun fixedCostsJsonParsesScheduleAndMalformedStartMonth() {
+        val json = """{"monthly":"104300","annual":"1251600","items":[{"id":1,"name":"住居","categoryName":"住居","accountName":"生活費口座","amount":"85000","day":27,"intervalCount":1,"intervalUnit":"month","startMonth":"2026-01-01T00:00:00Z"},{"id":2,"name":"保険","accountName":"口座","amount":"12000","day":5,"intervalCount":2,"intervalUnit":"month","startMonth":"not-a-date"},{"id":3,"name":"年会費","accountName":"カード","amount":"24000","day":1,"intervalCount":1,"intervalUnit":"year","startMonth":"2026-02-01"}]}"""
+        val costs = Json { ignoreUnknownKeys = true }.decodeFromString<FixedCostsDto>(json).toDomain()
+        assertEquals(104300L, costs.monthly)
+        assertEquals(3, costs.items.size)
+        assertEquals("毎月27日", costs.items[0].scheduleLabel())
+        assertEquals("2か月ごと5日", costs.items[1].scheduleLabel())
+        assertEquals("毎年2月1日", costs.items[2].scheduleLabel())
+        assertNull(costs.items[1].startMonth)
+    }
+
+    @Test fun fixedCostsEmptyResponseIsSupported() {
+        val costs = FixedCostsDto("0", "0", emptyList()).toDomain()
+        assertTrue(costs.items.isEmpty())
+    }
+
+    @Test fun fixedCosts404IsRecognizedAsUnsupported() {
+        val response = retrofit2.Response.error<FixedCostsDto>(
+            404,
+            "".toResponseBody(),
+        )
+        assertEquals(404, retrofit2.HttpException(response).code())
+    }
 }

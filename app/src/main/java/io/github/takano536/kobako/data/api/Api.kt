@@ -18,16 +18,27 @@ import okhttp3.MediaType.Companion.toMediaType
 @Serializable data class SummaryDto(val month: String, val income: String, val expense: String, val difference: String, val expenseCategories: List<CategoryDto> = emptyList())
 @Serializable data class PaymentDto(val dueOn: String, val amount: String)
 @Serializable data class BalanceAccountDto(val id: Long, val name: String, val kind: String, val balance: String, val scheduledAmount: String? = null, val scheduledDueOn: String? = null, val unbilledAmount: String? = null, val nextPayment: PaymentDto? = null)
-@Serializable data class BalanceGroupDto(val name: String, val systemKey: String, val accounts: List<BalanceAccountDto>)
+@Serializable data class BalanceGroupDto(val name: String, val systemKey: String? = null, val accounts: List<BalanceAccountDto>)
 @Serializable data class BalanceSummaryDto(val assets: String, val liabilities: String, val net: String)
 @Serializable data class BalancesDto(val summary: BalanceSummaryDto, val groups: List<BalanceGroupDto>)
-@Serializable data class TransactionDto(val id: Long, val occurredOn: String, val categoryName: String? = null, val accountName: String? = null, val memo: String? = null, val amount: String, val type: String)
+@Serializable data class TransactionDto(
+    val id: Long,
+    val occurredOn: String,
+    val categoryName: String? = null,
+    val accountName: String? = null,
+    val fromAccountName: String? = null,
+    val toAccountName: String? = null,
+    val memo: String? = null,
+    val amount: Long,
+    val type: String,
+)
+@Serializable data class TransactionsDto(val items: List<TransactionDto>, val count: Int = 0)
 
 interface KobakoApi {
     @GET("api/v1") suspend fun info(): ServerInfoDto
     @GET("api/v1/summary") suspend fun summary(@Query("month") month: String): SummaryDto
     @GET("api/v1/balances") suspend fun balances(): BalancesDto
-    @GET("api/v1/transactions") suspend fun transactions(@Query("month") month: String): List<TransactionDto>
+    @GET("api/v1/transactions") suspend fun transactions(@Query("month") month: String): TransactionsDto
 }
 
 class BearerInterceptor(private val token: () -> String) : Interceptor {
@@ -53,5 +64,13 @@ fun createApi(baseUrl: String, token: () -> String): KobakoApi {
 }
 
 fun SummaryDto.toDomain() = Summary(month, income.toLong(), expense.toLong(), difference.toLong(), expenseCategories.map { ExpenseCategory(it.id, it.name, it.total.toLong()) })
-fun BalancesDto.toDomain() = Balances(BalanceSummary(summary.assets.toLong(), summary.liabilities.toLong(), summary.net.toLong()), groups.map { g -> BalanceGroup(g.name, g.systemKey, g.accounts.map { a -> BalanceAccount(a.id, a.name, a.kind, a.balance.toLong(), a.scheduledAmount?.toLong(), a.scheduledDueOn?.let(LocalDate::parse), a.unbilledAmount?.toLong(), a.nextPayment?.let { NextPayment(LocalDate.parse(it.dueOn), it.amount.toLong()) }) }) })
-fun TransactionDto.toDomain() = Transaction(id, LocalDate.parse(occurredOn), categoryName ?: "未分類", accountName ?: "不明", memo, amount.toLong(), type)
+fun BalancesDto.toDomain() = Balances(BalanceSummary(summary.assets.toLong(), summary.liabilities.toLong(), summary.net.toLong()), groups.map { g -> BalanceGroup(g.name, g.systemKey ?: "", g.accounts.map { a -> BalanceAccount(a.id, a.name, a.kind, a.balance.toLong(), a.scheduledAmount?.toLong(), a.scheduledDueOn?.let(LocalDate::parse), a.unbilledAmount?.toLong(), a.nextPayment?.let { NextPayment(LocalDate.parse(it.dueOn), it.amount.toLong()) }) }) })
+fun TransactionDto.toDomain() = Transaction(
+    id = id,
+    occurredOn = LocalDate.parse(occurredOn),
+    category = if (type == "transfer") "振替" else categoryName ?: "未分類",
+    account = if (type == "transfer") listOfNotNull(fromAccountName, toAccountName).joinToString(" → ").ifBlank { "振替" } else accountName ?: "不明",
+    memo = memo,
+    amount = amount,
+    type = type,
+)

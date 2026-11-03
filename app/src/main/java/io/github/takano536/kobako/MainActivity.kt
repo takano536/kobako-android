@@ -70,9 +70,80 @@ class MainActivity : ComponentActivity() {
 @Composable private fun Page(title: String, content: @Composable ColumnScope.() -> Unit) { LazyColumn(Modifier.fillMaxSize().padding(horizontal = 20.dp), contentPadding = PaddingValues(vertical = 24.dp)) { item { Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Medium); Spacer(Modifier.height(24.dp)) }; item { Column(content = content) } } }
 @Composable private fun Metric(label: String, value: Long, color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface) { Column { Text(label, color = ThemeTokens.muted); Text(yen(value), color = color, style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.Medium) } }
 
-@Composable private fun OverviewScreen(vm: AppViewModel) { val repo = vm.repository(); var summary by remember { mutableStateOf<Summary?>(null) }; var error by remember { mutableStateOf<String?>(null) }; LaunchedEffect(repo) { repo?.summary(vm.month())?.onSuccess { summary = it }?.onFailure { error = "読み込めませんでした" } }; Page("概要") { Text(vm.month(), color = ThemeTokens.muted); Spacer(Modifier.height(20.dp)); error?.let { Text(it, color = ThemeTokens.moneyNegative) }; summary?.let { s -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Metric("収入", s.income, ThemeTokens.moneyPositive); Metric("支出", s.expense, ThemeTokens.moneyNegative); Metric("差額", s.difference, if (s.difference >= 0) ThemeTokens.moneyPositive else ThemeTokens.moneyNegative) }; Spacer(Modifier.height(32.dp)); Text("カテゴリ別支出", style = MaterialTheme.typography.titleMedium); s.expenseCategories.forEach { c -> Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) { Text(c.categoryName); Text(yen(c.total), style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum")) } }; Spacer(Modifier.height(20.dp)); Text("最近の取引", style = MaterialTheme.typography.titleMedium); Text("取引タブで全件を確認できます", color = ThemeTokens.muted) } ?: Text("この月の取引はありません", color = ThemeTokens.muted) } }
+@Composable private fun MonthSelector(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit, onCurrent: () -> Unit) {
+    val haptic = LocalHapticFeedback.current
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        TextButton({ haptic.performHapticFeedback(HapticFeedbackType.SegmentTick); onPrev() }) { Text("前月") }
+        Text(month.format(DateTimeFormatter.ofPattern("yyyy年M月")), style = MaterialTheme.typography.titleMedium)
+        TextButton({ haptic.performHapticFeedback(HapticFeedbackType.SegmentTick); onNext() }) { Text("翌月") }
+    }
+    TextButton({ haptic.performHapticFeedback(HapticFeedbackType.SegmentTick); onCurrent() }) { Text("今月に戻る") }
+}
 
-@Composable private fun TransactionsScreen(vm: AppViewModel) { val repo = vm.repository(); var tx by remember { mutableStateOf<List<Transaction>?>(null) }; LaunchedEffect(repo) { repo?.transactions(vm.month())?.onSuccess { tx = it } }; Page("取引") { Text(vm.month(), color = ThemeTokens.muted); Spacer(Modifier.height(16.dp)); if (tx.isNullOrEmpty()) Text("この月の取引はありません", color = ThemeTokens.muted) else tx!!.groupBy { it.occurredOn }.forEach { (date, rows) -> Text(date.format(DateTimeFormatter.ofPattern("M月d日")), style = MaterialTheme.typography.titleSmall, color = ThemeTokens.muted, modifier = Modifier.padding(top = 16.dp)); rows.forEach { t -> Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween) { Column(Modifier.weight(1f)) { Text(t.category); Text(listOfNotNull(t.account, t.memo).joinToString("・"), color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall) }; Text(signed(t.amount), color = if (t.amount < 0) ThemeTokens.moneyNegative else ThemeTokens.moneyPositive, style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum")) } } } } }
+@Composable private fun OverviewScreen(vm: AppViewModel) {
+    val repo = vm.repository()
+    val month by vm.monthFlow.collectAsStateWithLifecycle()
+    var summary by remember { mutableStateOf<Summary?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(repo, month) {
+        summary = null
+        error = null
+        repo?.summary(month.toString())?.onSuccess { summary = it }?.onFailure { error = "読み込めませんでした" }
+    }
+    Page("概要") {
+        MonthSelector(month, { vm.moveMonth(-1) }, { vm.moveMonth(1) }, { vm.resetMonth() })
+        Spacer(Modifier.height(20.dp))
+        error?.let { Text(it, color = ThemeTokens.moneyNegative) }
+        summary?.let { s ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Metric("収入", s.income, ThemeTokens.moneyPositive)
+                Metric("支出", s.expense, ThemeTokens.moneyNegative)
+                Metric("差額", s.difference, if (s.difference >= 0) ThemeTokens.moneyPositive else ThemeTokens.moneyNegative)
+            }
+            Spacer(Modifier.height(32.dp))
+            Text("カテゴリ別支出", style = MaterialTheme.typography.titleMedium)
+            s.expenseCategories.forEach { category ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(category.categoryName)
+                    Text(yen(category.total), style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"))
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            Text("最近の取引", style = MaterialTheme.typography.titleMedium)
+            Text("取引タブで全件を確認できます", color = ThemeTokens.muted)
+        } ?: Text("この月の取引はありません", color = ThemeTokens.muted)
+    }
+}
+
+@Composable private fun TransactionsScreen(vm: AppViewModel) {
+    val repo = vm.repository()
+    val month by vm.monthFlow.collectAsStateWithLifecycle()
+    var tx by remember { mutableStateOf<List<Transaction>?>(null) }
+    LaunchedEffect(repo, month) {
+        tx = null
+        repo?.transactions(month.toString())?.onSuccess { tx = it }
+    }
+    Page("取引") {
+        MonthSelector(month, { vm.moveMonth(-1) }, { vm.moveMonth(1) }, { vm.resetMonth() })
+        Spacer(Modifier.height(16.dp))
+        if (tx.isNullOrEmpty()) {
+            Text("この月の取引はありません", color = ThemeTokens.muted)
+        } else {
+            tx!!.groupBy { it.occurredOn }.forEach { (date, rows) ->
+                Text(date.format(DateTimeFormatter.ofPattern("M月d日")), style = MaterialTheme.typography.titleSmall, color = ThemeTokens.muted, modifier = Modifier.padding(top = 16.dp))
+                rows.forEach { t ->
+                    Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column(Modifier.weight(1f)) {
+                            Text(t.category)
+                            Text(listOfNotNull(t.account, t.memo).joinToString("・"), color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Text(signed(t.amount), color = if (t.amount < 0) ThemeTokens.moneyNegative else ThemeTokens.moneyPositive, style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"))
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable private fun BalancesScreen(vm: AppViewModel) { val repo = vm.repository(); var balances by remember { mutableStateOf<Balances?>(null) }; LaunchedEffect(repo) { repo?.balances()?.onSuccess { balances = it } }; Page("残高") { balances?.let { b -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Metric("資産", b.summary.assets); Metric("負債", b.summary.liabilities, ThemeTokens.moneyNegative); Metric("純資産", b.summary.net, ThemeTokens.moneyPositive) }; Spacer(Modifier.height(28.dp)); b.groups.forEach { g -> Text(g.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp)); g.accounts.forEach { a -> Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(a.name); Text(yen(a.balance), style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum")) }; Text(a.kind, color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall); a.nextPayment?.let { Text("次回引落し ${it.dueOn} / ${yen(it.amount)}", color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall) }; a.unbilledAmount?.let { Text("未請求 ${yen(it)}", color = ThemeTokens.muted, style = MaterialTheme.typography.bodySmall) } } } } } ?: Text("資産が登録されていません", color = ThemeTokens.muted) } }
 

@@ -45,6 +45,8 @@ Release PR のバージョンはコミット種別で決まります。
 
 Release PR は `chore(release): X.Y.Z` として自動作成されます。この PR をマージするとタグと Release が作られます。通常の機能 PR をマージしただけではタグは作りません。
 
+PR のタイトルは Conventional Commits 形式にし、Squash merge のコミットメッセージに使ってください。`ci` や `docs` だけではリリースされません。
+
 ## Workflows
 
 ### `.github/workflows/release-please.yml`

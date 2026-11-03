@@ -43,6 +43,7 @@ import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
 import androidx.compose.runtime.snapshotFlow
 import io.github.takano536.kobako.domain.Summary
+import io.github.takano536.kobako.domain.ExpenseCategory
 import io.github.takano536.kobako.domain.Transaction
 import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ThemeTokens

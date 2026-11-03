@@ -24,9 +24,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         setContent {
-            val container = androidx.compose.runtime.remember { AppContainer(applicationContext) }
+            val container = remember { AppContainer(applicationContext) }
             val viewModel: AppViewModel = viewModel(factory = AppViewModelFactory(container))
-            val state by androidx.lifecycle.compose.collectAsStateWithLifecycle(viewModel.state)
+            val state by viewModel.state.collectAsStateWithLifecycle()
             KobakoTheme(state.settings.theme) {
                 KobakoApp(
                     viewModel = viewModel,

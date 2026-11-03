@@ -69,6 +69,10 @@ fun SettingsScreen(viewModel: AppViewModel, requestNotifications: () -> Unit) {
     }
 }
 
+@Composable
+private fun SettingsSectionTitle(title: String) {
+    Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 24.dp, bottom = 6.dp))
+}
 /** Values always reserve the same 28dp trailing slot as an arrow. */
 @Composable
 private fun SettingsRow(

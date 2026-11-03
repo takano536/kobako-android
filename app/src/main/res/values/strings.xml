@@ -33,6 +33,7 @@
     <string name="assets">資産</string>
     <string name="liabilities">負債</string>
     <string name="scheduled_payment">支払予定</string>
+    <string name="net_assets">純資産</string>
     <string name="connection">接続</string>
     <string name="appearance">外観</string>
     <string name="app_information">アプリ情報</string>

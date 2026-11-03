@@ -28,7 +28,7 @@ fun yen(value: Long): String = NumberFormat.getNumberInstance(Locale.JAPAN).form
 fun signedYen(value: Long): String = if (value >= 0) "+${yen(value)}" else "-${yen(-value)}"
 
 @Composable
-fun Page(title: String, content: @Composable androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
+fun Page(title: String, content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 152.dp),

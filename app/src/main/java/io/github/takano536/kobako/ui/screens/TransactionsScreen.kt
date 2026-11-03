@@ -66,7 +66,7 @@ fun TransactionsScreen(viewModel: AppViewModel) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 128.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 80.dp),
         ) {
             item {
                 PageTitle(stringResource(R.string.nav_transactions))

@@ -77,7 +77,7 @@ fun OverviewScreen(viewModel: AppViewModel, nav: NavHostController) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 152.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 80.dp),
         ) {
             item {
                 PageTitle(stringResource(R.string.nav_overview))

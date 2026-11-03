@@ -88,7 +88,7 @@ fun EmptyMessage(message: String) {
 fun RegisterFab(visible: Boolean, modifier: Modifier = Modifier) {
     androidx.compose.animation.AnimatedVisibility(
         visible = visible,
-        modifier = modifier.padding(end = 16.dp, bottom = 64.dp),
+        modifier = modifier.padding(end = 16.dp, bottom = 8.dp),
         enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically { it },
         exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically { it },
     ) {

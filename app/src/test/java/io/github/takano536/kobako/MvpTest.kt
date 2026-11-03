@@ -8,10 +8,11 @@ import io.github.takano536.kobako.domain.scheduleLabel
 import io.github.takano536.kobako.notifications.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.*
 import org.junit.Test
+import retrofit2.HttpException
+import retrofit2.Response
 import java.time.LocalDate
 
 class MvpTest {
@@ -27,9 +28,8 @@ class MvpTest {
         assertEquals("銀行 → 現金", dto.items[1].toDomain().account)
     }
 
-    @Test fun fixedCostsRepositoryParsesContractJson() = withMockServer(
-        """{"monthly":"104300","annual":"1251600","items":[{"id":1,"name":"住居","categoryName":"住居","accountName":"生活費口座","amount":"85000","day":27,"intervalCount":1,"intervalUnit":"month","startMonth":"2026-01-01"}]}""",
-    ) { result ->
+    @Test fun fixedCostsRepositoryParsesContractJson() = runBlocking {
+        val result = ApiRepository(StubApi(fixedCosts = FixedCostsDto("104300", "1251600", listOf(FixedCostDto(1, "住居", "住居", "生活費口座", "85000", 27, 1, "month", "2026-01-01"))))).fixedCosts()
         assertTrue(result is FixedCostsResult.Success)
         val costs = (result as FixedCostsResult.Success).value
         assertEquals(104300L, costs.monthly)
@@ -38,11 +38,13 @@ class MvpTest {
         assertEquals("毎月27日", costs.items.single().scheduleLabel())
     }
 
-    @Test fun fixedCostsRepository404IsUnsupported() = withMockServer("", 404) { result ->
-        assertSame(FixedCostsResult.Unsupported, result)
+    @Test fun fixedCostsRepository404IsUnsupported() = runBlocking {
+        val error = HttpException(Response.error<FixedCostsDto>(404, "".toResponseBody()))
+        assertSame(FixedCostsResult.Unsupported, ApiRepository(StubApi(error = error)).fixedCosts())
     }
 
-    @Test fun fixedCostsRepositoryEmptyItemsIsEmpty() = withMockServer("""{"monthly":"0","annual":"0","items":[]}""") { result ->
+    @Test fun fixedCostsRepositoryEmptyItemsIsEmpty() = runBlocking {
+        val result = ApiRepository(StubApi(fixedCosts = FixedCostsDto("0", "0", emptyList()))).fixedCosts()
         val costs = (result as FixedCostsResult.Success).value
         assertTrue(costs.items.isEmpty())
     }
@@ -58,16 +60,11 @@ class MvpTest {
     @Test fun demoValues() = runBlocking { val demo = DemoRepository(LocalDate.of(2026, 11, 3)); val summary = demo.summary("2026-11").getOrThrow(); assertEquals(350000, summary.income); assertEquals(174200, summary.expense); assertEquals(175800, summary.difference); val balances = demo.balances().getOrThrow(); assertEquals(842000, balances.summary.assets); assertEquals(757000, balances.summary.net) }
     @Test fun dueDateAndDeduplication() { val today = LocalDate.of(2026, 11, 26); assertTrue(shouldNotify(today, today)); assertTrue(shouldNotify(today.plusDays(1), today)); assertFalse(shouldNotify(today.plusDays(2), today)); val d = NotificationDeduplicator(); assertTrue(d.markIfNew(2, today)); assertFalse(d.markIfNew(2, today)); assertTrue(d.markIfNew(2, today.plusDays(1))) }
 
-    private fun withMockServer(body: String, code: Int = 200, block: (FixedCostsResult) -> Unit) {
-        val server = MockWebServer()
-        server.enqueue(MockResponse().setResponseCode(code).setBody(body).addHeader("Content-Type", "application/json"))
-        server.start()
-        try {
-            val result = runBlocking { ApiRepository(createApi(server.url("/").toString()) { "token" }).fixedCosts() }
-            block(result)
-            assertEquals("/api/v1/fixed-costs", server.takeRequest().path)
-        } finally {
-            server.shutdown()
-        }
+    private class StubApi(private val fixedCosts: FixedCostsDto? = null, private val error: Throwable? = null) : KobakoApi {
+        override suspend fun info() = throw UnsupportedOperationException()
+        override suspend fun summary(month: String) = throw UnsupportedOperationException()
+        override suspend fun balances() = throw UnsupportedOperationException()
+        override suspend fun transactions(month: String) = throw UnsupportedOperationException()
+        override suspend fun fixedCosts(): FixedCostsDto = error?.let { throw it } ?: requireNotNull(fixedCosts)
     }
 }

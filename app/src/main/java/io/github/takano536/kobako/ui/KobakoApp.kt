@@ -1,18 +1,17 @@
 package io.github.takano536.kobako.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,9 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -95,32 +96,36 @@ private fun AppShell(
 ) {
     Scaffold(
         bottomBar = {
+            val colors = ThemeTokens.colors
             Column(
                 Modifier.fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .height(56.dp)
-                    .background(MaterialTheme.colorScheme.background),
+                    .background(MaterialTheme.colorScheme.background)
+                    .drawBehind {
+                        drawLine(colors.rule, Offset(0f, 0f), Offset(size.width, 0f), strokeWidth = 1.dp.toPx())
+                    },
             ) {
-                HorizontalDivider(thickness = 1.dp, color = ThemeTokens.colors.rule)
-                Row(Modifier.fillMaxWidth().height(55.dp)) {
+                Row(Modifier.fillMaxWidth().fillMaxHeight()) {
                     navItems.forEach { item ->
                         val label = stringResource(item.label)
-                        val selectedColor = if (item.route == selected) ThemeTokens.colors.accent else ThemeTokens.colors.muted
+                        val isSelected = item.route == selected
+                        val selectedColor = if (isSelected) colors.accent else colors.muted
                         Column(
-                            Modifier.weight(1f).height(55.dp).clickable {
-                                nav.navigate(item.route) {
-                                    popUpTo(Routes.overview)
-                                    launchSingleTop = true
-                                }
-                            },
+                            Modifier.weight(1f).fillMaxHeight().selectable(
+                                selected = isSelected,
+                                role = Role.Tab,
+                                onClick = {
+                                    nav.navigate(item.route) {
+                                        popUpTo(Routes.overview)
+                                        launchSingleTop = true
+                                    }
+                                },
+                            ),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            Icon(
-                                painter = painterResource(item.icon),
-                                contentDescription = label,
-                                tint = selectedColor,
-                            )
+                            Icon(painter = painterResource(item.icon), contentDescription = label, tint = selectedColor)
                             Text(label, color = selectedColor, fontSize = 12.sp, maxLines = 1)
                         }
                     }

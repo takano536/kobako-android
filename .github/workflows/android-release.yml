@@ -1,0 +1,114 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: release
+    steps:
+      - name: Check out tag
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify tag matches versionName
+        run: |
+          set -euo pipefail
+          VERSION_NAME="$(grep -o 'versionName = "[^"]*"' app/build.gradle.kts | head -1 | cut -d'"' -f2)"
+          if [[ "v${VERSION_NAME}" != "${GITHUB_REF_NAME}" ]]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match versionName ${VERSION_NAME}; bump app/build.gradle.kts before tagging"
+            exit 1
+          fi
+      - name: Install Android SDK components
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$(find "${ANDROID_HOME}/cmdline-tools" -name sdkmanager -type f | sort | tail -1)"
+          yes | "${SDKMANAGER}" --licenses >/dev/null || true
+          "${SDKMANAGER}" "platforms;android-36" "build-tools;36.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${KEYSTORE_BASE64}" ]]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not set in the release environment"
+            exit 1
+          fi
+          printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "${RUNNER_TEMP}/release.keystore"
+      - name: Build signed release APK
+        env:
+          KEYSTORE_FILE: ${{ runner.temp }}/release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+      - name: Verify APK signature
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/release/app-release.apk"
+          test -f "$APK"
+          APKSIGNER="$(find "${ANDROID_HOME}/build-tools" -name apksigner -type f | sort | tail -1)"
+          "$APKSIGNER" verify --print-certs "$APK"
+      - name: Require Release App configuration
+        env:
+          APP_CLIENT_ID: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          APP_BOT_LOGIN: ${{ vars.RELEASE_APP_BOT_LOGIN }}
+          APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${APP_CLIENT_ID}" || -z "${APP_BOT_LOGIN}" || -z "${APP_PRIVATE_KEY}" ]]; then
+            echo "::error::Release App is required. Set RELEASE_APP_CLIENT_ID and RELEASE_APP_BOT_LOGIN variables plus RELEASE_APP_PRIVATE_KEY secret in the release environment."
+            exit 1
+          fi
+      - name: Create repository-scoped Release App token
+        id: release_app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: takano536
+          repositories: kobako-android
+          permission-contents: write
+      - name: Verify Release App identity
+        env:
+          APP_SLUG: ${{ steps.release_app.outputs.app-slug }}
+          EXPECTED_BOT_LOGIN: ${{ vars.RELEASE_APP_BOT_LOGIN }}
+        run: |
+          set -euo pipefail
+          if [[ "${APP_SLUG}[bot]" != "${EXPECTED_BOT_LOGIN}" ]]; then
+            echo "::error::RELEASE_APP_BOT_LOGIN must match the configured App slug"
+            exit 1
+          fi
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ steps.release_app.outputs.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/release/app-release.apk"
+          SHA="$(sha256sum "$APK" | awk '{print $1}')"
+          echo "$SHA  app-release.apk" > app-release.apk.sha256
+          gh release create "$TAG" "$APK" app-release.apk.sha256 --repo "$GITHUB_REPOSITORY" --verify-tag --title "kobako $TAG" --generate-notes
+
+      - name: Remove keystore
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/release.keystore"

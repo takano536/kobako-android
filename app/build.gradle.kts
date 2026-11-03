@@ -5,13 +5,34 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val releaseKeystoreFile = System.getenv("KEYSTORE_FILE")
+val releaseKeystorePassword = System.getenv("KEYSTORE_PASSWORD")
+val releaseKeyAlias = System.getenv("KEY_ALIAS")
+val releaseKeyPassword = System.getenv("KEY_PASSWORD")
+
 android { namespace = "io.github.takano536.kobako"; compileSdk = 36; buildToolsVersion = "36.0.0"
     defaultConfig { applicationId = "io.github.takano536.kobako"; minSdk = 26; targetSdk = 36; versionCode = 1; versionName = "0.1.0" }
-    buildTypes { getByName("debug") { manifestPlaceholders["usesCleartextTraffic"] = "true" }; getByName("release") { manifestPlaceholders["usesCleartextTraffic"] = "false" } }
+    signingConfigs {
+        if (releaseKeystoreFile != null) {
+            create("release") {
+                storeFile = file(releaseKeystoreFile)
+                storePassword = requireNotNull(releaseKeystorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
+        }
+    }
+    buildTypes {
+        getByName("debug") { manifestPlaceholders["usesCleartextTraffic"] = "true" }
+        getByName("release") {
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }
     kotlinOptions { jvmTarget = "21" }
-    buildTypes { release { isMinifyEnabled = false } }
 }
 
 dependencies {

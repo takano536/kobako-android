@@ -1,5 +1,6 @@
 package io.github.takano536.kobako.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -11,5 +12,12 @@ object ThemeTokens {
 }
 private val Light = lightColorScheme(primary = ThemeTokens.accent, onPrimary = Color.White, background = ThemeTokens.paper, onBackground = ThemeTokens.ink, surface = ThemeTokens.surface, onSurface = ThemeTokens.ink, outline = ThemeTokens.rule)
 private val Dark = darkColorScheme(primary = ThemeTokens.darkAccent, onPrimary = ThemeTokens.darkPaper, background = ThemeTokens.darkPaper, onBackground = ThemeTokens.darkInk, surface = ThemeTokens.darkSurface, onSurface = ThemeTokens.darkInk, outline = ThemeTokens.darkRule)
-@Composable fun KobakoTheme(theme: String, content: @Composable () -> Unit) { MaterialTheme(colorScheme = if (theme == "dark") Dark else Light, typography = Typography(), content = content) }
+@Composable fun KobakoTheme(theme: String, content: @Composable () -> Unit) {
+    val dark = when (theme) {
+        "dark" -> true
+        "light" -> false
+        else -> isSystemInDarkTheme()
+    }
+    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = Typography(), content = content)
+}
 val SectionSpace = 32.dp

@@ -34,19 +34,20 @@ import io.github.takano536.kobako.ui.theme.ThemeTokens
 
 @Composable
 fun SettingsScreen(viewModel: AppViewModel, requestNotifications: () -> Unit) {
+    val uriHandler = LocalUriHandler.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     LazyColumn(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 152.dp)) {
         item { PageTitle(stringResource(R.string.nav_settings)) }
-        item { SettingsSectionTitle(stringResource(R.string.connection)) }
+        item { SectionTitle(stringResource(R.string.connection)) }
         item {
             SettingsRow(
                 label = stringResource(R.string.server),
                 value = state.settings.url.ifBlank { stringResource(R.string.not_connected) },
                 arrow = true,
-                onClick = { /* Connection editing remains the onboarding flow in the read-only MVP. */ },
+                // Server editing remains the existing onboarding flow; this row is informational.
             )
         }
-        item { SettingsSectionTitle(stringResource(R.string.appearance)) }
+        item { SectionTitle(stringResource(R.string.appearance)) }
         item { ThemeChoices(selected = state.settings.theme, onSelect = viewModel::setTheme) }
         item {
             SettingsRow(
@@ -64,17 +65,13 @@ fun SettingsScreen(viewModel: AppViewModel, requestNotifications: () -> Unit) {
                 },
             )
         }
-        item { SettingsSectionTitle(stringResource(R.string.app_information)) }
+        item { SectionTitle(stringResource(R.string.app_information)) }
         item { SettingsRow(stringResource(R.string.version), BuildConfig.VERSION_NAME) }
         item { SettingsRow(stringResource(R.string.license), "AGPL-3.0-only") }
-        item { SettingsRow(stringResource(R.string.source_code), arrow = true) }
+        item { SettingsRow(stringResource(R.string.source_code), arrow = true, onClick = { uriHandler.openUri("https://github.com/takano536/kobako") }) }
     }
 }
 
-@Composable
-private fun SettingsSectionTitle(title: String) {
-    Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 24.dp, bottom = 6.dp))
-}
 /** Values always reserve the same 28dp trailing slot as an arrow. */
 @Composable
 private fun SettingsRow(

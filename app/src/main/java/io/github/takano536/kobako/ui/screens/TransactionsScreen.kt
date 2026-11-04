@@ -1,10 +1,5 @@
 package io.github.takano536.kobako.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,18 +8,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -32,23 +27,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.domain.Transaction
-import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.Routes
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun TransactionsScreen(viewModel: AppViewModel) {
+fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHostState: SnackbarHostState) {
     val repository = viewModel.repository()
     val month by viewModel.monthFlow.collectAsStateWithLifecycle()
     var transactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
     var failed by remember { mutableStateOf(false) }
+    var filter by remember { mutableIntStateOf(0) }
     val listState = rememberLazyListState()
     var fabVisible by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+    val readonlyMessage = stringResource(R.string.readonly_notice)
     LaunchedEffect(repository, month) {
         transactions = emptyList()
         failed = false
@@ -62,37 +62,42 @@ fun TransactionsScreen(viewModel: AppViewModel) {
                 previous = position
             }
     }
+    val visibleTransactions = transactions.filter { tx -> filter == 0 || (filter == 1 && tx.amount < 0) || (filter == 2 && tx.amount > 0) }
     Box(Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 80.dp),
-        ) {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 160.dp)) {
             item {
-                PageTitle(stringResource(R.string.nav_transactions))
+                PageHeader(stringResource(R.string.nav_transactions)) { nav.navigate(Routes.settings) }
                 MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) })
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    FilterChip(stringResource(R.string.filter_all), filter == 0) { filter = 0 }
+                    FilterChip(stringResource(R.string.filter_expense), filter == 1) { filter = 1 }
+                    FilterChip(stringResource(R.string.filter_income), filter == 2) { filter = 2 }
+                }
             }
             if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
-            if (transactions.isEmpty() && !failed) item { EmptyMessage(stringResource(R.string.no_transactions)) }
-            transactions.groupBy { it.occurredOn }.toSortedMap(reverseOrder()).forEach { (date, rows) ->
-                item(key = date.toString()) { DateHeader(date) }
+            else if (visibleTransactions.isEmpty()) item { EmptyMessage(stringResource(R.string.no_transactions)) }
+            visibleTransactions.groupBy { it.occurredOn }.toSortedMap(reverseOrder()).forEach { (date, rows) ->
+                item(key = "date-$date") { DateHeader(date) }
                 items(rows, key = { it.id }) { TransactionRow(it) }
             }
         }
-        RegisterFab(fabVisible, Modifier.align(Alignment.BottomEnd))
+        ReadOnlyFab(fabVisible, onClick = { scope.launch { snackbarHostState.showSnackbar(readonlyMessage) } }, modifier = Modifier.align(Alignment.BottomEnd))
     }
 }
 
-@Composable private fun DateHeader(date: LocalDate) {
-    Text(date.format(DateTimeFormatter.ofPattern("M月d日")), color = ThemeTokens.colors.muted, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
+@Composable
+private fun DateHeader(date: LocalDate) {
+    Text(date.format(DateTimeFormatter.ofPattern("M月d日")), color = io.github.takano536.kobako.ui.theme.ThemeTokens.colors.muted, style = androidx.compose.material3.MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 16.dp, top = 14.dp, bottom = 4.dp))
 }
 
-@Composable private fun TransactionRow(transaction: Transaction) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 9.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
+@Composable
+private fun TransactionRow(transaction: Transaction) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
+        CategoryDot(transaction.category)
+        Column(Modifier.weight(1f).padding(start = 8.dp)) {
             Text(transaction.category)
-            Text(listOfNotNull(transaction.account, transaction.memo).joinToString("・"), color = ThemeTokens.colors.muted, style = MaterialTheme.typography.bodySmall)
+            Text(listOfNotNull(transaction.account, transaction.memo).joinToString("・"), color = io.github.takano536.kobako.ui.theme.ThemeTokens.colors.muted, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
         }
-        Text(signedYen(transaction.amount), color = if (transaction.amount < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.moneyPositive)
+        Text(signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = androidx.compose.material3.MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
     }
 }

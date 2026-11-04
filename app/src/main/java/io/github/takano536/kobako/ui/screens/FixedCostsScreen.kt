@@ -1,6 +1,5 @@
 package io.github.takano536.kobako.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,21 +18,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.domain.FixedCost
 import io.github.takano536.kobako.domain.FixedCosts
 import io.github.takano536.kobako.domain.FixedCostsResult
 import io.github.takano536.kobako.domain.scheduleLabel
+import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 
 @Composable
-fun FixedCostsScreen(viewModel: AppViewModel) {
+fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
     val repository = viewModel.repository()
     var data by remember { mutableStateOf<FixedCosts?>(null) }
     var unsupported by remember { mutableStateOf(false) }
@@ -49,19 +47,16 @@ fun FixedCostsScreen(viewModel: AppViewModel) {
             null -> Unit
         }
     }
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 152.dp),
-    ) {
-        item { PageTitle(stringResource(R.string.nav_fixed_costs)) }
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = 88.dp)) {
+        item { PageHeader(stringResource(R.string.nav_fixed_costs)) { nav.navigate(Routes.settings) } }
         when {
-            unsupported -> item { Text(stringResource(R.string.fixed_cost_api_unsupported), modifier = Modifier.padding(vertical = 24.dp)) }
+            unsupported -> item { EmptyMessage(stringResource(R.string.fixed_cost_api_unsupported)) }
             failed -> item { EmptyMessage(stringResource(R.string.read_error)) }
             data != null -> {
                 val fixed = requireNotNull(data)
                 item {
-                    Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                        Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.colors.moneyNegative)
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.colors.moneyNegative, primary = true)
                         Metric(stringResource(R.string.annualized), fixed.annual)
                     }
                 }
@@ -76,16 +71,11 @@ fun FixedCostsScreen(viewModel: AppViewModel) {
 @Composable
 private fun FixedCostRow(item: FixedCost) {
     val colors = ThemeTokens.colors
-    Row(
-        Modifier.fillMaxWidth().drawBehind {
-            drawLine(colors.rule, androidx.compose.ui.geometry.Offset(0f, size.height), androidx.compose.ui.geometry.Offset(size.width, size.height))
-        }.padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(item.name, style = MaterialTheme.typography.bodyMedium)
             Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, style = MaterialTheme.typography.bodySmall)
         }
-        Text(yen(item.amount), color = colors.moneyNegative, style = MaterialTheme.typography.bodyMedium)
+        Text(yen(item.amount), color = colors.moneyNegative, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
     }
 }

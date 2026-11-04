@@ -44,8 +44,19 @@
     <string name="theme_light">ライト</string>
     <string name="theme_dark">ダーク</string>
     <string name="payment_notifications">カード支払い通知</string>
+    <string name="register_transaction">取引を登録</string>
+    <string name="monthly_expense">この月の支出</string>
+    <string name="see_all">すべて見る</string>
+    <string name="loading">読み込み中</string>
+    <string name="filter_all">すべて</string>
+    <string name="filter_expense">支出</string>
+    <string name="filter_income">収入</string>
+    <string name="theme_system_hint">端末の設定に合わせる</string>
     <string name="version">バージョン</string>
     <string name="license">ライセンス</string>
     <string name="source_code">ソースコード</string>
-    <string name="register_transaction">取引を登録</string>
+    <string name="readonly_notice">このアプリは閲覧専用です</string>
+    <string name="balance">残高</string>
+    <string name="settlement_scheduled">決済予定</string>
+    <string name="unbilled">未決済</string>
 </resources>

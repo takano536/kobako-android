@@ -49,14 +49,14 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
         }
     }
     LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
-        item { PageHeader(stringResource(R.string.nav_fixed_costs)) { nav.navigate(Routes.settings) } }
+        item { PageHeader(stringResource(R.string.nav_fixed_costs)) }
         when {
             unsupported -> item { EmptyMessage(stringResource(R.string.fixed_cost_api_unsupported)) }
             failed -> item { EmptyMessage(stringResource(R.string.read_error)) }
             data != null -> {
                 val fixed = requireNotNull(data)
                 item {
-                    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.SpaceBetween) {
                         Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.colors.moneyNegative, primary = true)
                         Metric(stringResource(R.string.annualized), fixed.annual)
                     }

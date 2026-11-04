@@ -23,12 +23,12 @@ class ApiRepository(private val api: KobakoApi) : KobakoRepository {
 class DemoRepository(private val today: LocalDate = LocalDate.now()) : KobakoRepository {
     private val month get() = today.toString().take(7)
     private val tx by lazy { listOf(
-        Transaction(1, today.withDayOfMonth(27), "住居", "生活費口座", "家賃", -85000, "expense"),
+        Transaction(1, today.withDayOfMonth(27), "住居", "生活費口座", "家賃", -85000, "expense", "api"),
         Transaction(2, today.withDayOfMonth(25), "給与", "給与口座", "給与", 320000, "income"),
-        Transaction(3, today.withDayOfMonth(21), "娯楽", "クレジットカード", "書籍", -14500, "expense"),
+        Transaction(3, today.withDayOfMonth(21), "娯楽", "クレジットカード", "書籍", -14500, "expense", "api"),
         Transaction(4, today.withDayOfMonth(18), "臨時収入", "給与口座", "メルカリ売上", 8000, "income"),
         Transaction(5, today.withDayOfMonth(15), "交通", "現金", "定期券", -9500, "expense"),
-        Transaction(6, today.withDayOfMonth(26), "振替", "給与口座 → 生活費口座", "生活費へ振替", 180000, "transfer"),
+        Transaction(6, today.withDayOfMonth(26), "振替", "給与口座 → 生活費口座", "生活費へ振替", 180000, "transfer", "api"),
         Transaction(7, today.withDayOfMonth(12), "日用品", "現金", "ドラッグストア", -16000, "expense"),
         Transaction(8, today.withDayOfMonth(10), "振替", "生活費口座 → 現金", "ATMで引き出し", 30000, "transfer"),
         Transaction(9, today.withDayOfMonth(8), "水道・光熱", "生活費口座", "電気・ガス", -12000, "expense"),

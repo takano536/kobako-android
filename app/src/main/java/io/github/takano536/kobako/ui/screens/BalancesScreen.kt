@@ -41,13 +41,13 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
         repository?.balances()?.onSuccess { balances = it }?.onFailure { failed = true }
     }
     LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
-        item { PageHeader(stringResource(R.string.nav_balances)) { nav.navigate(Routes.settings) } }
+        item { PageHeader(stringResource(R.string.nav_balances)) }
         if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
         balances?.let { data ->
             item {
-                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    Metric(stringResource(R.string.net_assets), data.summary.net, if (data.summary.net < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.ink, primary = true)
-                    Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Metric(stringResource(R.string.net_assets), data.summary.net, ThemeTokens.colors.ink, primary = true)
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Metric(stringResource(R.string.assets), data.summary.assets)
                         Metric(stringResource(R.string.liabilities), data.summary.liabilities, ThemeTokens.colors.moneyNegative)
                     }

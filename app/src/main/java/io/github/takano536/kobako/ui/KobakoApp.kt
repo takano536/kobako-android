@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -61,6 +63,7 @@ private val navItems = listOf(
     NavItem(Routes.transactions, R.string.nav_transactions, R.drawable.ic_nav_transactions),
     NavItem(Routes.fixedCosts, R.string.nav_fixed_costs, R.drawable.ic_nav_fixed),
     NavItem(Routes.balances, R.string.nav_balances, R.drawable.ic_nav_balances),
+    NavItem(Routes.settings, R.string.nav_settings, R.drawable.ic_nav_settings),
 )
 
 @Composable
@@ -106,8 +109,8 @@ private fun AppShell(nav: NavHostController, viewModel: AppViewModel, state: App
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            Icon(painterResource(item.icon), contentDescription = label, tint = tint)
-                            Text(label, color = tint, fontSize = 12.sp, maxLines = 1)
+                            Icon(painterResource(item.icon), contentDescription = label, tint = tint, modifier = Modifier.size(20.dp))
+                            Text(label, color = tint, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal, maxLines = 1)
                         }
                     }
                 }

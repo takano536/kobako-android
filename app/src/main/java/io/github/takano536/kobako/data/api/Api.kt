@@ -31,6 +31,7 @@ import okhttp3.MediaType.Companion.toMediaType
     val memo: String? = null,
     val amount: Long,
     val type: String,
+    val origin: String = "local",
 )
 @Serializable data class TransactionsDto(val items: List<TransactionDto>, val count: Int = 0)
 @Serializable data class FixedCostDto(
@@ -90,6 +91,7 @@ fun TransactionDto.toDomain() = Transaction(
     memo = memo,
     amount = amount,
     type = type,
+    origin = origin,
 )
 
 fun FixedCostDto.toDomain() = FixedCost(

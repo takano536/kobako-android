@@ -40,6 +40,7 @@ import java.text.NumberFormat
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.roundToInt
 
 fun yen(value: Long): String = NumberFormat.getNumberInstance(Locale.JAPAN).format(kotlin.math.abs(value)) + "円"
 fun signedYen(value: Long): String = when {
@@ -140,7 +141,7 @@ fun CategoryDot(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun CategoryRow(name: String, amount: Long, total: Long) {
     val share = if (total > 0) amount.toDouble() / total else 0.0
-    val shareLabel = if (share > 0 && share < 0.005) "<1%" else "${(share * 100).toInt()}%"
+    val shareLabel = if (share > 0 && share < 0.005) "<1%" else "${(share * 100).roundToInt()}%"
     Column(Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(name)

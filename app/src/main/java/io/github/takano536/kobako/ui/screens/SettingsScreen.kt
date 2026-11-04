@@ -31,12 +31,13 @@ import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.BuildConfig
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.theme.ListBottomPadding
 
 @Composable
 fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotifications: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LazyColumn(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 88.dp)) {
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = ListBottomPadding)) {
         item { PageHeader(stringResource(R.string.nav_settings)) { } }
         item { SectionTitle(stringResource(R.string.connection)) }
         item {

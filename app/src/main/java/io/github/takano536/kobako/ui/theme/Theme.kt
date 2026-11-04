@@ -48,7 +48,7 @@ private val LightColors = KobakoColors(
 private val DarkColors = KobakoColors(
     paper = Color(0xff1a1f1c), ink = Color(0xffe4e7e0), muted = Color(0xffa2ada5), accent = Color(0xff8cc4a6), accentStrong = Color(0xffa8d6bd),
     buttonPrimary = Color(0xff8cc4a6), buttonDanger = Color(0xffec948a), moneyNegative = Color(0xfff2978e), moneyPositive = Color(0xff8db9ef), categoryDot = Color(0xff91a99d), categoryBar = Color(0xff6f8a7c),
-    categoryDots = listOf(Color(0xff91a99d), Color(0xffc39e98), Color(0xffc2b57d), Color(0xffc1a3c2), Color(0xff9baeba), Color(0xffa3c0ae), Color(0xffb7b281), Color(0xffb8b9ac)),
+    categoryDots = listOf(Color(0xff91a99d), Color(0xffb49a96), Color(0xffb0a784), Color(0xffb09eaf), Color(0xff98a6b0), Color(0xffa4b2a9), Color(0xffaaa383), Color(0xffb7b9ad)),
     rule = Color(0xff343d37), bar = Color(0xff2b332e), surface = Color(0xff1f2521), surfaceHover = Color(0xff28302b), softControl = Color(0xff262d28), onAccent = Color(0xff142019),
 )
 
@@ -59,7 +59,17 @@ object ThemeTokens {
         @Composable get() = LocalKobakoColors.current
 }
 
-fun KobakoColors.categoryColor(name: String): Color = categoryDots[(name.hashCode() and Int.MAX_VALUE) % categoryDots.size]
+fun KobakoColors.categoryColor(name: String): Color = when (name) {
+    "住居" -> categoryDots[0]
+    "食費" -> categoryDots[1]
+    "日用品" -> categoryDots[2]
+    "娯楽" -> categoryDots[3]
+    "水道・光熱" -> categoryDots[4]
+    "交通" -> categoryDots[5]
+    "通信" -> categoryDots[6]
+    "臨時収入" -> categoryDots[7]
+    else -> categoryDots[(name.hashCode() and Int.MAX_VALUE) % categoryDots.size]
+}
 private val KobakoTypography = Typography(
     displaySmall = TextStyle(fontSize = 30.sp, lineHeight = 35.sp, fontWeight = FontWeight.Medium),
     titleLarge = TextStyle(fontSize = 21.sp, lineHeight = 27.sp, fontWeight = FontWeight.Medium),
@@ -90,3 +100,4 @@ fun KobakoTheme(theme: String, content: @Composable () -> Unit) {
 
 val PageHorizontalPadding = 16.dp
 val SectionSpace = 24.dp
+val ListBottomPadding = 160.dp

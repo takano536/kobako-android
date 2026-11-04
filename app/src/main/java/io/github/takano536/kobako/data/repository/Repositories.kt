@@ -23,21 +23,35 @@ class ApiRepository(private val api: KobakoApi) : KobakoRepository {
 class DemoRepository(private val today: LocalDate = LocalDate.now()) : KobakoRepository {
     private val month get() = today.toString().take(7)
     private val tx by lazy { listOf(
-        Transaction(1, today.withDayOfMonth(1), "給与", "住信SBI", "11月分給与", 350000, "income"),
-        Transaction(2, today.withDayOfMonth(2), "家賃", "住信SBI", null, -90000, "expense"),
-        Transaction(3, today.withDayOfMonth(3), "食費", "三井住友カード", null, -45000, "expense"),
-        Transaction(4, today.withDayOfMonth(4), "外食", "三井住友カード", null, -18000, "expense"),
-        Transaction(5, today.withDayOfMonth(5), "光熱費", "住信SBI", null, -12000, "expense"),
-        Transaction(6, today.withDayOfMonth(6), "交通", "Suica", null, -8000, "expense"),
-        Transaction(7, today.withDayOfMonth(7), "サブスク", "三井住友カード", null, -1200, "expense"),
+        Transaction(1, today.withDayOfMonth(27), "住居", "生活費口座", "家賃", -85000, "expense"),
+        Transaction(2, today.withDayOfMonth(25), "給与", "給与口座", "給与", 320000, "income"),
+        Transaction(3, today.withDayOfMonth(21), "娯楽", "クレジットカード", "書籍", -14500, "expense"),
+        Transaction(4, today.withDayOfMonth(18), "臨時収入", "給与口座", "メルカリ売上", 8000, "income"),
+        Transaction(5, today.withDayOfMonth(15), "交通", "現金", "定期券", -9500, "expense"),
+        Transaction(6, today.withDayOfMonth(26), "振替", "給与口座 → 生活費口座", "生活費へ振替", 180000, "transfer"),
+        Transaction(7, today.withDayOfMonth(12), "日用品", "現金", "ドラッグストア", -16000, "expense"),
+        Transaction(8, today.withDayOfMonth(10), "振替", "生活費口座 → 現金", "ATMで引き出し", 30000, "transfer"),
+        Transaction(9, today.withDayOfMonth(8), "水道・光熱", "生活費口座", "電気・ガス", -12000, "expense"),
+        Transaction(10, today.withDayOfMonth(5), "通信", "クレジットカード", "携帯電話", -7300, "expense"),
+        Transaction(11, today.withDayOfMonth(1), "食費", "現金", "スーパー", -42500, "expense"),
     ) }
     override suspend fun connect() = Result.success(ServerInfo("kobako demo", 1, Features(true, true)))
-    override suspend fun summary(month: String) = Result.success(Summary(month, 350000, 174200, 175800, listOf(ExpenseCategory(1, "食費", 45000), ExpenseCategory(2, "家賃", 90000), ExpenseCategory(3, "外食", 18000), ExpenseCategory(4, "光熱費", 12000), ExpenseCategory(5, "交通", 8000), ExpenseCategory(6, "サブスク", 1200))))
+    override suspend fun summary(month: String) = Result.success(Summary(month, 328000, 186800, 141200, listOf(
+        ExpenseCategory(1, "住居", 85000),
+        ExpenseCategory(2, "食費", 42500),
+        ExpenseCategory(3, "日用品", 16000),
+        ExpenseCategory(4, "娯楽", 14500),
+        ExpenseCategory(5, "水道・光熱", 12000),
+        ExpenseCategory(6, "交通", 9500),
+        ExpenseCategory(7, "通信", 7300),
+    )))
     override suspend fun balances() = Result.success(Balances(BalanceSummary(842000, 85000, 757000), listOf(
-        BalanceGroup("銀行", "bank", listOf(BalanceAccount(1, "住信SBI", "bank", 800000, null, null, null, null))),
-        BalanceGroup("現金", "cash", listOf(BalanceAccount(2, "財布", "cash", 30000, null, null, null, null))),
-        BalanceGroup("クレジットカード", "credit_card", listOf(BalanceAccount(3, "三井住友カード", "credit_card", -85000, 85000, today.withDayOfMonth(27), 12000, NextPayment(today.withDayOfMonth(27), 85000)))),
-        BalanceGroup("電子マネー", "electronic_money", listOf(BalanceAccount(4, "Suica", "electronic_money", 12000, null, null, null, null))),
+        BalanceGroup("銀行", "bank", listOf(
+            BalanceAccount(1, "生活費口座", "bank", 512000, null, null, null, null),
+            BalanceAccount(2, "給与口座", "bank", 245000, null, null, null, null),
+        )),
+        BalanceGroup("現金", "cash", listOf(BalanceAccount(3, "現金", "cash", 85000, null, null, null, null))),
+        BalanceGroup("クレジットカード", "credit_card", listOf(BalanceAccount(4, "クレジットカード", "credit_card", -85000, 85000, today.withDayOfMonth(27), 0, NextPayment(today.withDayOfMonth(27), 85000)))),
     )))
     override suspend fun transactions(month: String) = Result.success(tx)
     override suspend fun fixedCosts() = FixedCostsResult.Success(FixedCosts(

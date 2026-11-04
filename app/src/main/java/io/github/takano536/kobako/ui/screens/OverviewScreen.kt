@@ -30,6 +30,7 @@ import io.github.takano536.kobako.domain.Summary
 import io.github.takano536.kobako.domain.Transaction
 import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.theme.ListBottomPadding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -63,7 +64,7 @@ fun OverviewScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHost
             }
     }
     Box(Modifier.fillMaxSize()) {
-        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 160.dp)) {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
             item { PageHeader(stringResource(R.string.nav_overview)) { nav.navigate(Routes.settings) } }
             item { MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) }) }
             item {
@@ -91,14 +92,14 @@ fun OverviewScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHost
                         androidx.compose.material3.TextButton(onClick = { nav.navigate(Routes.transactions) }) { Text(stringResource(R.string.see_all)) }
                     })
                 }
-                items(data.expenseCategories.take(7), key = { it.categoryId }) { category -> CategoryRow(category.categoryName, category.total, data.expense) }
+                items(data.expenseCategories.take(7), key = { "category-${it.categoryId}" }) { category -> CategoryRow(category.categoryName, category.total, data.expense) }
                 item {
                     SectionTitle(stringResource(R.string.recent_transactions), trailing = {
                         androidx.compose.material3.TextButton(onClick = { nav.navigate(Routes.transactions) }) { Text(stringResource(R.string.all_transactions)) }
                     })
                 }
                 if (transactions.isEmpty()) item { EmptyMessage(stringResource(R.string.no_transactions)) }
-                else items(transactions.take(5), key = { it.id }) { tx ->
+                else items(transactions.take(5), key = { "recent-transaction-${it.id}" }) { tx ->
                     RecentTransactionRow(tx.occurredOn.format(DateTimeFormatter.ofPattern("M月d日")), tx.category, tx.account, tx.memo, tx.amount, tx.type)
                 }
             }

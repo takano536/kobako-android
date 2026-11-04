@@ -29,7 +29,7 @@ import io.github.takano536.kobako.domain.BalanceGroup
 import io.github.takano536.kobako.domain.Balances
 import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ThemeTokens
-
+import io.github.takano536.kobako.ui.theme.ListBottomPadding
 @Composable
 fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
     val repository = viewModel.repository()
@@ -40,7 +40,7 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
         failed = false
         repository?.balances()?.onSuccess { balances = it }?.onFailure { failed = true }
     }
-    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = 88.dp)) {
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
         item { PageHeader(stringResource(R.string.nav_balances)) { nav.navigate(Routes.settings) } }
         if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
         balances?.let { data ->

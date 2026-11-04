@@ -32,6 +32,7 @@ import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.domain.Transaction
 import io.github.takano536.kobako.ui.Routes
+import io.github.takano536.kobako.ui.theme.ListBottomPadding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -64,7 +65,7 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
     }
     val visibleTransactions = transactions.filter { tx -> filter == 0 || (filter == 1 && tx.amount < 0) || (filter == 2 && tx.amount > 0) }
     Box(Modifier.fillMaxSize()) {
-        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 160.dp)) {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
             item {
                 PageHeader(stringResource(R.string.nav_transactions)) { nav.navigate(Routes.settings) }
                 MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) })

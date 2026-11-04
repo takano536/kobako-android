@@ -29,6 +29,7 @@ import io.github.takano536.kobako.domain.FixedCostsResult
 import io.github.takano536.kobako.domain.scheduleLabel
 import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.theme.ListBottomPadding
 
 @Composable
 fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
@@ -47,7 +48,7 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
             null -> Unit
         }
     }
-    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = 88.dp)) {
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
         item { PageHeader(stringResource(R.string.nav_fixed_costs)) { nav.navigate(Routes.settings) } }
         when {
             unsupported -> item { EmptyMessage(stringResource(R.string.fixed_cost_api_unsupported)) }

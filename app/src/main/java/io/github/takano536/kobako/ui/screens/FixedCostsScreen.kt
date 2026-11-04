@@ -58,7 +58,7 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
             data != null -> {
                 val fixed = requireNotNull(data)
                 item {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.SpaceBetween) {
+                    SummaryPanel {
                         Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.colors.moneyNegative, primary = true)
                         Metric(stringResource(R.string.annualized), fixed.annual)
                     }

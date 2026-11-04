@@ -67,21 +67,16 @@ fun OverviewScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHost
             item { PageHeader(stringResource(R.string.nav_overview)) }
             item { MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) }) }
             item {
-                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)) {
-                    when {
-                        failed -> Text(stringResource(R.string.read_error), color = ThemeTokens.colors.moneyNegative)
-                        summary == null -> Text(stringResource(R.string.loading), color = ThemeTokens.colors.muted)
-                        else -> {
-                            val data = requireNotNull(summary)
-                            val ruleColor = ThemeTokens.colors.rule
-                            Column(Modifier.fillMaxWidth().padding(bottom = 12.dp).drawBehind { drawLine(ruleColor, Offset(0f, size.height - 1.dp.toPx()), Offset(size.width, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx()) }) {
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                                    Metric(stringResource(R.string.monthly_expense), data.expense, ThemeTokens.colors.moneyNegative, primary = true)
-                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Bottom) {
-                                        Metric(stringResource(R.string.income), data.income, ThemeTokens.colors.moneyPositive)
-                                        Metric(stringResource(R.string.difference), data.difference, if (data.difference >= 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative)
-                                    }
-                                }
+                when {
+                    failed -> Text(stringResource(R.string.read_error), modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp), color = ThemeTokens.colors.moneyNegative)
+                    summary == null -> Text(stringResource(R.string.loading), modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp), color = ThemeTokens.colors.muted)
+                    else -> {
+                        val data = requireNotNull(summary)
+                        SummaryPanel {
+                            Metric(stringResource(R.string.monthly_expense), data.expense, ThemeTokens.colors.moneyNegative, primary = true)
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Bottom) {
+                                Metric(stringResource(R.string.income), data.income, ThemeTokens.colors.moneyPositive)
+                                Metric(stringResource(R.string.difference), data.difference, if (data.difference >= 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative)
                             }
                         }
                     }

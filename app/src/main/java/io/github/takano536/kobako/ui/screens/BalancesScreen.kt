@@ -48,11 +48,11 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
         if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
         balances?.let { data ->
             item {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.SpaceBetween) {
+                SummaryPanel {
                     Metric(stringResource(R.string.net_assets), data.summary.net, ThemeTokens.colors.ink, primary = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Metric(stringResource(R.string.assets), data.summary.assets)
-                        Metric(stringResource(R.string.liabilities), -kotlin.math.abs(data.summary.liabilities), ThemeTokens.colors.moneyNegative)
+                        Metric(stringResource(R.string.liabilities), -kotlin.math.abs(data.summary.liabilities), ThemeTokens.colors.moneyNegative, signed = true)
                     }
                 }
             }
@@ -92,7 +92,7 @@ private fun AccountRow(account: BalanceAccount, systemKey: String) {
             Text(account.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
             Row(Modifier.fillMaxWidth(0.6f)) {
                 columns.forEach { value ->
-                    Text(signedYen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = if (value < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.ink, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
+                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = if (value < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.ink, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
                 }
             }
         }

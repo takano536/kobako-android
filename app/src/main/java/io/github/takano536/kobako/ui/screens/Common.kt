@@ -38,6 +38,8 @@ import io.github.takano536.kobako.ui.theme.categoryColor
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
 import io.github.takano536.kobako.ui.theme.FabContentEndPadding
+import io.github.takano536.kobako.ui.theme.FabBottomPadding
+import io.github.takano536.kobako.ui.theme.FabSize
 import java.text.NumberFormat
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -122,13 +124,13 @@ fun EmptyMessage(message: String) {
 fun ReadOnlyFab(visible: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     AnimatedVisibility(
         visible = visible,
-        modifier = modifier.padding(end = PageHorizontalPadding, bottom = 64.dp),
+        modifier = modifier.padding(end = PageHorizontalPadding, bottom = FabBottomPadding),
         enter = fadeIn() + slideInVertically { it },
         exit = fadeOut() + slideOutVertically { it },
     ) {
         IconButton(
             onClick = onClick,
-            modifier = Modifier.size(56.dp).clip(CircleShape).background(ThemeTokens.colors.buttonPrimary),
+            modifier = Modifier.size(FabSize).clip(CircleShape).background(ThemeTokens.colors.buttonPrimary),
         ) {
             Icon(painterResource(R.drawable.ic_action_add), contentDescription = stringResource(R.string.register_transaction), tint = ThemeTokens.colors.onAccent)
         }

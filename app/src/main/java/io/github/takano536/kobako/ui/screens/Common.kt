@@ -52,7 +52,7 @@ fun signedYen(value: Long): String = when {
 }
 
 @Composable
-fun PageHeader(title: String, onSettings: (() -> Unit)? = null) {
+fun PageHeader(title: String, settingsActive: Boolean = false, onSettings: (() -> Unit)? = null) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -61,7 +61,7 @@ fun PageHeader(title: String, onSettings: (() -> Unit)? = null) {
         Spacer(Modifier.weight(1f))
         if (onSettings != null) {
             IconButton(onClick = onSettings, modifier = Modifier.size(44.dp)) {
-                Icon(painterResource(R.drawable.ic_nav_settings), contentDescription = stringResource(R.string.nav_settings), tint = ThemeTokens.colors.accent)
+                Icon(painterResource(R.drawable.ic_nav_settings), contentDescription = stringResource(R.string.nav_settings), tint = if (settingsActive) ThemeTokens.colors.accent else ThemeTokens.colors.muted)
             }
         }
     }

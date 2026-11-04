@@ -38,7 +38,7 @@ fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotif
     val uriHandler = LocalUriHandler.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     LazyColumn(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = ListBottomPadding)) {
-        item { PageHeader(stringResource(R.string.nav_settings)) { } }
+        item { PageHeader(stringResource(R.string.nav_settings), settingsActive = true) { } }
         item { SectionTitle(stringResource(R.string.connection)) }
         item {
             SettingsRow(label = stringResource(R.string.server), value = state.settings.url.ifBlank { stringResource(R.string.not_connected) }, arrow = true)

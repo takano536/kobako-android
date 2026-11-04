@@ -1,4 +1,6 @@
 package io.github.takano536.kobako.ui.screens
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,11 +24,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.geometry.Offset
 import androidx.navigation.NavHostController
 import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
@@ -71,11 +73,14 @@ fun OverviewScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHost
                         summary == null -> Text(stringResource(R.string.loading), color = ThemeTokens.colors.muted)
                         else -> {
                             val data = requireNotNull(summary)
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                                Metric(stringResource(R.string.expense), data.expense, ThemeTokens.colors.moneyNegative, primary = true)
-                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Bottom) {
-                                    Metric(stringResource(R.string.income), data.income, ThemeTokens.colors.moneyPositive)
-                                    Metric(stringResource(R.string.difference), data.difference, if (data.difference >= 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative)
+                            val ruleColor = ThemeTokens.colors.rule
+                            Column(Modifier.fillMaxWidth().padding(bottom = 12.dp).drawBehind { drawLine(ruleColor, Offset(0f, size.height - 1.dp.toPx()), Offset(size.width, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx()) }) {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+                                    Metric(stringResource(R.string.monthly_expense), data.expense, ThemeTokens.colors.moneyNegative, primary = true)
+                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Bottom) {
+                                        Metric(stringResource(R.string.income), data.income, ThemeTokens.colors.moneyPositive)
+                                        Metric(stringResource(R.string.difference), data.difference, if (data.difference >= 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative)
+                                    }
                                 }
                             }
                         }
@@ -87,7 +92,7 @@ fun OverviewScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHost
                 items(data.expenseCategories.take(7), key = { "category-${it.categoryId}" }) { category -> CategoryRow(category.categoryName, category.total, data.expense) }
                 item { SectionTitle(stringResource(R.string.recent_transactions), trailing = { androidx.compose.material3.TextButton({ nav.navigate(Routes.transactions) }) { Text(stringResource(R.string.all_transactions), color = ThemeTokens.colors.muted, fontSize = 12.sp) } }) }
                 if (transactions.isEmpty()) item { EmptyMessage(stringResource(R.string.no_transactions)) }
-                else items(transactions.take(5), key = { "recent-transaction-${it.id}" }) { tx -> RecentTransactionRow(tx.occurredOn.format(DateTimeFormatter.ofPattern("M月d日")), tx.category, tx.account, tx.memo, tx.amount, tx.type, tx.origin) }
+                else items(transactions.take(5), key = { "recent-transaction-${it.id}" }) { tx -> RecentTransactionRow(tx.occurredOn.format(java.time.format.DateTimeFormatter.ofPattern("M月d日（E）", java.util.Locale.JAPANESE)), tx.category, tx.account, tx.memo, tx.amount, tx.type, tx.origin) }
             }
         }
         ReadOnlyFab(fabVisible, onClick = { scope.launch { snackbarHostState.showSnackbar(readonlyMessage) } }, modifier = Modifier.align(Alignment.BottomEnd))

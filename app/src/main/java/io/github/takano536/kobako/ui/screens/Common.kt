@@ -1,4 +1,9 @@
 package io.github.takano536.kobako.ui.screens
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
+import io.github.takano536.kobako.R
+import io.github.takano536.kobako.ui.theme.categoryColor
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -25,13 +30,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.offset
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,10 +48,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.em
-import io.github.takano536.kobako.R
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
 import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
 import io.github.takano536.kobako.ui.theme.ThemeTokens
-import io.github.takano536.kobako.ui.theme.categoryColor
+import io.github.takano536.kobako.domain.Transaction
 import java.text.NumberFormat
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -106,14 +115,14 @@ fun CategoryDot(name: String, modifier: Modifier = Modifier) { Box(Modifier.then
 fun CategoryRow(name: String, amount: Long, total: Long) {
     val share = if (total > 0) amount.toDouble() / total else 0.0
     val shareLabel = categoryShareLabel(amount, total)
-    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding, vertical = 6.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
+        Row(Modifier.fillMaxWidth().height(28.dp), verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(name)
             Text(name, Modifier.padding(start = 8.dp).weight(1f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(yen(amount), fontSize = 14.sp, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
         }
-        Row(Modifier.fillMaxWidth().padding(top = 5.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f).height(2.dp).background(ThemeTokens.colors.bar)) { Box(Modifier.fillMaxWidth(share.toFloat().coerceIn(0f, 1f)).height(2.dp).background(ThemeTokens.colors.categoryBar)) }
+        Row(Modifier.fillMaxWidth().height(20.dp), verticalAlignment = Alignment.Top) {
+            Box(Modifier.weight(1f).padding(top = 4.dp).height(2.dp).background(ThemeTokens.colors.bar)) { Box(Modifier.fillMaxWidth(share.toFloat().coerceIn(0f, 1f)).height(2.dp).background(ThemeTokens.colors.categoryBar)) }
             Text(shareLabel, Modifier.width(44.dp), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, fontSize = 12.sp)
         }
     }
@@ -122,29 +131,39 @@ fun CategoryRow(name: String, amount: Long, total: Long) {
 @Composable fun transactionColor(amount: Long, type: String): Color = when { type == "transfer" || amount == 0L -> ThemeTokens.colors.ink; amount < 0 -> ThemeTokens.colors.moneyNegative; else -> ThemeTokens.colors.moneyPositive }
 
 @Composable
-fun RecentTransactionRow(date: String, category: String, account: String, memo: String?, amount: Long, type: String, origin: String = "local") {
-    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding, vertical = 8.dp)) {
-        Text(date, color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Medium, modifier = Modifier.height(25.dp))
+fun TransactionGridRow(transaction: Transaction, date: String? = null, rowVerticalPadding: androidx.compose.ui.unit.Dp = 0.dp) {
+    val config = LocalConfiguration.current
+    val categoryWidth = (config.screenWidthDp * 0.18f).dp.coerceIn(64.dp, 112.dp)
+    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding, vertical = rowVerticalPadding)) {
+        date?.let { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Medium, modifier = Modifier.heightIn(min = 25.dp)) }
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-            CategoryDot(category)
+            CategoryDot(transaction.category)
+            Text(transaction.category, modifier = Modifier.width(categoryWidth).padding(start = 8.dp), fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Column(Modifier.weight(1f).padding(start = 8.dp)) {
-                Text(category, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(listOfNotNull(account, memo).joinToString("・"), color = ThemeTokens.colors.muted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    if (origin == "api") Text("API", Modifier.padding(start = 6.dp).background(ThemeTokens.colors.surfaceHover, RoundedCornerShape(50)).padding(horizontal = 5.dp, vertical = 1.dp), color = ThemeTokens.colors.accentStrong, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(transaction.account, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(transaction.memo.orEmpty(), modifier = Modifier.weight(1f, fill = false), color = ThemeTokens.colors.muted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    if (transaction.origin == "api") Text("API", Modifier.padding(start = 6.dp).background(ThemeTokens.colors.surfaceHover, RoundedCornerShape(50)).padding(horizontal = 5.dp, vertical = 1.dp), color = ThemeTokens.colors.accentStrong, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            Text(signedYen(amount), color = transactionColor(amount, type), fontSize = 14.sp, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), textAlign = TextAlign.End)
+            Text(if (transaction.type == "transfer") yen(transaction.amount) else signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, fontFeatureSettings = "tnum"), textAlign = TextAlign.End)
         }
     }
 }
 
 @Composable
+fun RecentTransactionRow(date: String, category: String, account: String, memo: String?, amount: Long, type: String, origin: String = "local") {
+    TransactionGridRow(Transaction(0L, java.time.LocalDate.now(), category, account, memo, amount, type, origin), date, rowVerticalPadding = 10.dp)
+}
+
+@Composable
 fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit, hasChevron: Boolean = false) {
-    TextButton(onClick, Modifier.height(36.dp).border(1.dp, if (selected) ThemeTokens.colors.accent.copy(alpha = 0.22f) else ThemeTokens.colors.rule, RoundedCornerShape(6.dp)).background(if (selected) ThemeTokens.colors.chipSelected else Color.Transparent, RoundedCornerShape(6.dp)), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(label, color = if (selected) ThemeTokens.colors.accentStrong else ThemeTokens.colors.muted, fontSize = 12.sp)
-            if (hasChevron) Icon(painterResource(R.drawable.ic_action_chevron_down), null, modifier = Modifier.size(10.dp), tint = if (selected) ThemeTokens.colors.accentStrong else ThemeTokens.colors.muted)
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+        Box(Modifier.height(36.dp).border(1.dp, if (selected) ThemeTokens.colors.accent.copy(alpha = 0.22f) else ThemeTokens.colors.rule, RoundedCornerShape(6.dp)).background(if (selected) ThemeTokens.colors.chipSelected else Color.Transparent, RoundedCornerShape(6.dp)).pointerInput(onClick) { detectTapGestures(onTap = { onClick() }) }.padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(label, color = if (selected) ThemeTokens.colors.accentStrong else ThemeTokens.colors.muted, fontSize = 12.sp)
+                if (hasChevron) Icon(painterResource(R.drawable.ic_action_chevron_down), null, modifier = Modifier.size(10.dp), tint = if (selected) ThemeTokens.colors.accentStrong else ThemeTokens.colors.muted)
+            }
         }
     }
 }

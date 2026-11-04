@@ -2,14 +2,17 @@ package io.github.takano536.kobako.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
@@ -17,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,14 +43,14 @@ import io.github.takano536.kobako.ui.theme.ThemeTokens
 fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotifications: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LazyColumn(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = ListBottomPadding)) {
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
         item { PageHeader(stringResource(R.string.nav_settings)) }
-        item { SectionTitle(stringResource(R.string.connection)) }
+        item { SettingsSectionTitle(stringResource(R.string.connection)) }
         item { SettingsRow(stringResource(R.string.server), state.settings.url.ifBlank { stringResource(R.string.not_connected) }, arrow = true) }
-        item { SectionTitle(stringResource(R.string.appearance)) }
+        item { SettingsSectionTitle(stringResource(R.string.appearance)) }
         item { ThemeChoices(state.settings.theme, viewModel::setTheme) }
         item { SettingsRow(stringResource(R.string.payment_notifications), trailing = { Switch(state.settings.notifications, { enabled -> viewModel.setNotifications(enabled); if (enabled) requestNotifications() }) }) }
-        item { SectionTitle(stringResource(R.string.app_information)) }
+        item { SettingsSectionTitle(stringResource(R.string.app_information)) }
         item { SettingsRow(stringResource(R.string.version), BuildConfig.VERSION_NAME) }
         item { SettingsRow(stringResource(R.string.license), "AGPL-3.0-only") }
         item { SettingsRow(stringResource(R.string.source_code), arrow = true, onClick = { uriHandler.openUri("https://github.com/takano536/kobako") }) }
@@ -56,32 +58,73 @@ fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotif
 }
 
 @Composable
+private fun SettingsSectionTitle(title: String) {
+    Text(title, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 8.dp), color = ThemeTokens.colors.ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+}
+@Composable
 private fun SettingsRow(label: String, value: String? = null, arrow: Boolean = false, onClick: (() -> Unit)? = null, trailing: (@Composable () -> Unit)? = null) {
     val contents: @Composable () -> Unit = {
-        Row(Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().height(44.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(label, color = ThemeTokens.colors.ink, modifier = Modifier.weight(1f), fontSize = 14.sp)
-            if (value != null) Text(value, color = ThemeTokens.colors.muted, fontSize = 12.sp, maxLines = 1, modifier = Modifier.weight(1f))
-            else Spacer(Modifier.weight(1f))
-            trailing?.invoke() ?: Box(Modifier.width(28.dp), contentAlignment = Alignment.CenterEnd) { if (arrow) Icon(painterResource(R.drawable.ic_action_chevron_forward), null, tint = ThemeTokens.colors.muted) }
+            if (value != null) Text(value, color = ThemeTokens.colors.muted, fontSize = 14.sp, maxLines = 1)
+            trailing?.invoke()
+            if (trailing == null) Box(Modifier.width(20.dp), contentAlignment = Alignment.CenterEnd) { if (arrow) Text("→", color = ThemeTokens.colors.muted, fontSize = 14.sp) }
         }
     }
-    if (onClick == null) contents() else TextButton(onClick, Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) { contents() }
-    HorizontalDivider(color = ThemeTokens.colors.rule, thickness = 1.dp)
+    if (onClick == null) contents() else Row(Modifier.fillMaxWidth().clickable(onClick = onClick)) { contents() }
+
 }
 
 @Composable
 private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
     val choices = listOf("system" to R.string.theme_system, "light" to R.string.theme_light, "dark" to R.string.theme_dark)
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         choices.forEach { (key, label) ->
-            TextButton(onClick = { onSelect(key) }, modifier = Modifier.weight(1f).border(1.dp, if (selected == key) ThemeTokens.colors.accent else ThemeTokens.colors.rule, MaterialTheme.shapes.small), contentPadding = androidx.compose.foundation.layout.PaddingValues(6.dp)) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(Modifier.fillMaxWidth().height(46.dp).background(if (key == "dark") Color(0xff1a1f1c) else Color(0xfffcfcf8), MaterialTheme.shapes.extraSmall)) { if (selected == key) Box(Modifier.padding(6.dp).background(ThemeTokens.colors.accent, MaterialTheme.shapes.extraSmall).height(4.dp).fillMaxWidth()) }
-                    Text(stringResource(label), color = ThemeTokens.colors.ink, fontSize = 12.sp, fontWeight = if (selected == key) FontWeight.Medium else FontWeight.Normal)
-                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, fontSize = 11.sp, maxLines = 1)
+            Row(Modifier.fillMaxWidth().height(64.dp).border(1.dp, if (selected == key) ThemeTokens.colors.accent else ThemeTokens.colors.rule, MaterialTheme.shapes.medium).clickable { onSelect(key) }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                ThemePreview(key, Modifier.width(88.dp).height(44.dp))
+                Column(Modifier.padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioMark(selected == key)
+                        Text(stringResource(label), color = ThemeTokens.colors.ink, modifier = Modifier.padding(start = 8.dp), fontSize = 14.sp, fontWeight = if (selected == key) FontWeight.Medium else FontWeight.Normal)
+                    }
+                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, modifier = Modifier.padding(start = 28.dp), fontSize = 11.sp, maxLines = 1)
                 }
             }
         }
     }
     Spacer(Modifier.height(8.dp))
+}
+
+@Composable
+private fun RadioMark(selected: Boolean) {
+    Box(Modifier.size(20.dp).border(2.dp, if (selected) ThemeTokens.colors.accent else ThemeTokens.colors.muted, androidx.compose.foundation.shape.CircleShape), contentAlignment = Alignment.Center) {
+        if (selected) Box(Modifier.size(10.dp).background(ThemeTokens.colors.accent, androidx.compose.foundation.shape.CircleShape))
+    }
+}
+
+@Composable
+private fun ThemePreview(key: String, modifier: Modifier = Modifier) {
+    val lightPaper = Color(0xfffcfcf8)
+    val lightInk = Color(0xff292e2b)
+    val lightMuted = Color(0xff68736c)
+    val lightRule = Color(0xffdfe3da)
+    val lightAccent = Color(0xff426d59)
+    val darkPaper = Color(0xff1a1f1c)
+    val darkInk = Color(0xffe4e7e0)
+    val darkMuted = Color(0xffa2ada5)
+    val darkRule = Color(0xff343d37)
+    val darkAccent = Color(0xff8cc4a6)
+    Row(modifier.border(1.dp, ThemeTokens.colors.rule, MaterialTheme.shapes.small)) {
+        val sheets = if (key == "system") listOf(lightPaper to (lightInk to lightMuted), darkPaper to (darkInk to darkMuted)) else if (key == "light") listOf(lightPaper to (lightInk to lightMuted), lightPaper to (lightInk to lightMuted)) else listOf(darkPaper to (darkInk to darkMuted), darkPaper to (darkInk to darkMuted))
+        sheets.forEachIndexed { index, (paper, textColors) ->
+            val (ink, muted) = textColors
+            Column(Modifier.weight(1f).fillMaxWidth().background(paper).padding(horizontal = 5.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Box(Modifier.fillMaxWidth(0.6f).height(4.dp).background(ink, androidx.compose.foundation.shape.CircleShape))
+                Box(Modifier.fillMaxWidth().height(1.dp).background(if (paper == lightPaper) lightRule else darkRule))
+                Box(Modifier.fillMaxWidth(0.85f).height(3.dp).background(muted, androidx.compose.foundation.shape.CircleShape))
+                Box(Modifier.fillMaxWidth(0.35f).height(4.dp).background(if (paper == lightPaper) lightAccent else darkAccent, androidx.compose.foundation.shape.CircleShape))
+            }
+            if (index == 0) Spacer(Modifier.width(1.dp).background(if (paper == lightPaper) lightRule else darkRule))
+        }
+    }
 }

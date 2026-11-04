@@ -1,15 +1,17 @@
 package io.github.takano536.kobako.ui.screens
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Text
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,11 +74,14 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
 @Composable
 private fun FixedCostRow(item: FixedCost) {
     val colors = ThemeTokens.colors
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text(item.name, style = MaterialTheme.typography.bodyMedium)
-            Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, style = MaterialTheme.typography.bodySmall)
+    Column(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(item.name, style = MaterialTheme.typography.bodyMedium)
+                Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, style = MaterialTheme.typography.bodySmall)
+            }
+            Text(yen(item.amount), color = colors.moneyNegative, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
         }
-        Text(yen(item.amount), color = colors.moneyNegative, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
+        HorizontalDivider(color = colors.rule, thickness = 1.dp)
     }
 }

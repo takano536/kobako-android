@@ -1,4 +1,7 @@
 package io.github.takano536.kobako.ui.screens
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.sp
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,7 +52,7 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
                     Metric(stringResource(R.string.net_assets), data.summary.net, ThemeTokens.colors.ink, primary = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Metric(stringResource(R.string.assets), data.summary.assets)
-                        Metric(stringResource(R.string.liabilities), data.summary.liabilities, ThemeTokens.colors.moneyNegative)
+                        Metric(stringResource(R.string.liabilities), -kotlin.math.abs(data.summary.liabilities), ThemeTokens.colors.moneyNegative)
                     }
                 }
             }
@@ -69,10 +72,10 @@ private fun BalanceHeading(group: BalanceGroup) {
         else -> listOf(stringResource(R.string.balance))
     }
     Column(Modifier.fillMaxWidth().padding(top = 20.dp)) {
-        Text(group.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
+        Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-            columns.forEach { Text(it, color = ThemeTokens.colors.muted, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f), textAlign = TextAlign.End) }
+            Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
         }
     }
 }
@@ -81,13 +84,18 @@ private fun BalanceHeading(group: BalanceGroup) {
 private fun AccountRow(account: BalanceAccount, systemKey: String) {
     val columns = when (systemKey) {
         "bank" -> listOf(account.scheduledAmount ?: 0L, account.balance)
-        "credit_card" -> listOf(account.scheduledAmount ?: 0L, account.unbilledAmount ?: 0L)
+        "credit_card" -> listOf(-kotlin.math.abs(account.scheduledAmount ?: 0L), account.unbilledAmount ?: 0L)
         else -> listOf(account.balance)
     }
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(account.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-        columns.forEach { value ->
-            Text(yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = if (value < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.ink, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
+    Column(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(account.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+            Row(Modifier.fillMaxWidth(0.6f)) {
+                columns.forEach { value ->
+                    Text(signedYen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = if (value < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.ink, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
+                }
+            }
         }
+        HorizontalDivider(color = ThemeTokens.colors.rule, thickness = 1.dp)
     }
 }

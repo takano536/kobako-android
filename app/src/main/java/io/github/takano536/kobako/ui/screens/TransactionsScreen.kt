@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
@@ -40,8 +43,9 @@ import io.github.takano536.kobako.domain.Transaction
 import io.github.takano536.kobako.ui.theme.ListBottomPadding
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.util.Locale
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -60,32 +64,40 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
     val types = listOf(null to "種別") + transactions.map { it.type to when (it.type) { "expense" -> "支出"; "income" -> "収入"; else -> "振替" } }.distinctBy { it.first }
     val categories = listOf(null to "カテゴリ") + transactions.map { it.category }.distinct().map { it to it }
     val accounts = listOf(null to "資産") + transactions.map { it.account }.distinct().map { it to it }
-    LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
-        item { PageHeader(stringResource(R.string.nav_transactions), transactions.size) }
-        item { MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) }) }
-        item {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TransactionMenuChip(types, type, { type = it })
-                TransactionMenuChip(categories, category, { category = it })
-                TransactionMenuChip(accounts, account, { account = it })
-                FilterChip("APIのみ", apiOnly, { apiOnly = !apiOnly })
+    val readonlyMessage = stringResource(R.string.readonly_notice)
+    val scope = rememberCoroutineScope()
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
+            item { PageHeader(stringResource(R.string.nav_transactions), transactions.size) }
+            item { MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) }) }
+            item {
+                Column {
+                    Row(Modifier.fillMaxWidth().height(36.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TransactionMenuChip(types, type, { type = it })
+                        TransactionMenuChip(categories, category, { category = it })
+                        TransactionMenuChip(accounts, account, { account = it })
+                        FilterChip("APIのみ", apiOnly, { apiOnly = !apiOnly })
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+            when {
+                failed -> item { EmptyMessage(stringResource(R.string.read_error)) }
+                filtered.isEmpty() -> item { EmptyMessage(stringResource(R.string.no_transactions)) }
+                else -> filtered.groupBy { it.occurredOn }.toSortedMap(compareByDescending { it }).entries.forEachIndexed { index, (date, rows) ->
+                    item(key = "date-$date") { DateHeader(date, index > 0) }
+                    items(rows, key = { "tx-${it.id}" }) { TransactionGridRow(it) }
+                }
             }
         }
-        when {
-            failed -> item { EmptyMessage(stringResource(R.string.read_error)) }
-            filtered.isEmpty() -> item { EmptyMessage(stringResource(R.string.no_transactions)) }
-            else -> filtered.groupBy { it.occurredOn }.toSortedMap(compareByDescending { it }).forEach { (date, rows) ->
-                item(key = "date-$date") { DateHeader(date) }
-                items(rows, key = { "tx-${it.id}" }) { TransactionRow(it) }
-            }
-        }
+        ReadOnlyFab(true, onClick = { scope.launch { snackbarHostState.showSnackbar(readonlyMessage) } }, modifier = Modifier.align(Alignment.BottomEnd))
     }
 }
 
 @Composable
 private fun <T> TransactionMenuChip(options: List<Pair<T?, String>>, selected: T?, onSelected: (T?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Box {
+    Box(Modifier.height(36.dp)) {
         FilterChip(options.first { it.first == selected }.second, selected != null, { expanded = true }, hasChevron = true)
         DropdownMenu(expanded, { expanded = false }) { options.forEach { (value, label) -> DropdownMenuItem({ Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) }, { onSelected(value); expanded = false }) } }
     }
@@ -93,20 +105,6 @@ private fun <T> TransactionMenuChip(options: List<Pair<T?, String>>, selected: T
 
 
 @Composable
-private fun DateHeader(date: LocalDate) { Text(date.format(DateTimeFormatter.ofPattern("M月d日")), color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).heightIn(min = 25.dp)) }
-
-@Composable
-private fun TransactionRow(transaction: Transaction) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-        CategoryDot(transaction.category)
-        Text(transaction.category, modifier = Modifier.widthIn(min = 64.dp, max = 112.dp).padding(start = 8.dp), fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        Column(Modifier.weight(1f).padding(start = 8.dp)) {
-            Text(transaction.account, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(transaction.memo.orEmpty(), color = ThemeTokens.colors.muted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (transaction.origin == "api") Text("API", Modifier.padding(start = 6.dp).background(ThemeTokens.colors.surfaceHover, RoundedCornerShape(50)).padding(horizontal = 5.dp, vertical = 1.dp), color = ThemeTokens.colors.accentStrong, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            }
-        }
-        Text(if (transaction.type == "transfer") yen(transaction.amount) else signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = androidx.compose.material3.MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, fontFeatureSettings = "tnum"))
-    }
+private fun DateHeader(date: LocalDate, spaced: Boolean) {
+    Text(date.format(DateTimeFormatter.ofPattern("M月d日（E）", Locale.JAPANESE)), color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (spaced) 16.dp else 0.dp).heightIn(min = 25.dp))
 }

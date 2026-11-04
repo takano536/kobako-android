@@ -101,3 +101,4 @@ fun KobakoTheme(theme: String, content: @Composable () -> Unit) {
 val PageHorizontalPadding = 16.dp
 val SectionSpace = 24.dp
 val ListBottomPadding = 160.dp
+val FabContentEndPadding = 80.dp

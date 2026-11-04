@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.ui.theme.categoryColor
 import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
+import io.github.takano536.kobako.ui.theme.FabContentEndPadding
 import java.text.NumberFormat
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -52,7 +54,7 @@ fun signedYen(value: Long): String = when {
 @Composable
 fun PageHeader(title: String, onSettings: (() -> Unit)? = null) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink)
@@ -68,7 +70,7 @@ fun PageHeader(title: String, onSettings: (() -> Unit)? = null) {
 @Composable
 fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
     Row(
-        Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 8.dp),
+        Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = 24.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -93,7 +95,7 @@ fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, pr
 @Composable
 fun MonthSelector(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onPrev, modifier = Modifier.size(44.dp)) {
@@ -113,14 +115,14 @@ fun MonthSelector(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
 
 @Composable
 fun EmptyMessage(message: String) {
-    Text(message, color = ThemeTokens.colors.muted, modifier = Modifier.padding(vertical = 24.dp), style = MaterialTheme.typography.bodyMedium)
+    Text(message, color = ThemeTokens.colors.muted, modifier = Modifier.padding(horizontal = PageHorizontalPadding, vertical = 24.dp), style = MaterialTheme.typography.bodyMedium)
 }
 
 @Composable
 fun ReadOnlyFab(visible: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     AnimatedVisibility(
         visible = visible,
-        modifier = modifier.padding(end = 16.dp, bottom = 64.dp),
+        modifier = modifier.padding(end = PageHorizontalPadding, bottom = 64.dp),
         enter = fadeIn() + slideInVertically { it },
         exit = fadeOut() + slideOutVertically { it },
     ) {
@@ -142,7 +144,7 @@ fun CategoryDot(name: String, modifier: Modifier = Modifier) {
 fun CategoryRow(name: String, amount: Long, total: Long) {
     val share = if (total > 0) amount.toDouble() / total else 0.0
     val shareLabel = if (share > 0 && share < 0.005) "<1%" else "${(share * 100).roundToInt()}%"
-    Column(Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
+    Column(Modifier.fillMaxWidth().padding(start = PageHorizontalPadding, end = FabContentEndPadding, top = 7.dp, bottom = 7.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(name)
             Text(name, modifier = Modifier.padding(start = 8.dp).weight(1f), style = MaterialTheme.typography.bodyMedium)
@@ -167,7 +169,7 @@ fun transactionColor(amount: Long, type: String): Color = when {
 
 @Composable
 fun RecentTransactionRow(date: String, category: String, account: String, memo: String?, amount: Long, type: String) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+    Column(Modifier.fillMaxWidth().padding(start = PageHorizontalPadding, end = FabContentEndPadding, top = 8.dp, bottom = 8.dp)) {
         Text(date, color = ThemeTokens.colors.muted, style = MaterialTheme.typography.labelSmall)
         Row(Modifier.fillMaxWidth().padding(top = 3.dp), verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(category)

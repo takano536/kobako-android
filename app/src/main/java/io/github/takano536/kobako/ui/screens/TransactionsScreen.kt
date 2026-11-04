@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,7 +33,9 @@ import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.domain.Transaction
 import io.github.takano536.kobako.ui.Routes
+import io.github.takano536.kobako.ui.theme.FabContentEndPadding
 import io.github.takano536.kobako.ui.theme.ListBottomPadding
+import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -63,7 +66,7 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
                 previous = position
             }
     }
-    val visibleTransactions = transactions.filter { tx -> filter == 0 || (filter == 1 && tx.amount < 0) || (filter == 2 && tx.amount > 0) }
+    val visibleTransactions = transactions.filter { tx -> filter == 0 || (filter == 1 && tx.amount < 0) || (filter == 2 && tx.type == "income") }
     Box(Modifier.fillMaxSize()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
             item {
@@ -88,16 +91,16 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
 
 @Composable
 private fun DateHeader(date: LocalDate) {
-    Text(date.format(DateTimeFormatter.ofPattern("M月d日")), color = io.github.takano536.kobako.ui.theme.ThemeTokens.colors.muted, style = androidx.compose.material3.MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 16.dp, top = 14.dp, bottom = 4.dp))
+    Text(date.format(DateTimeFormatter.ofPattern("M月d日")), color = io.github.takano536.kobako.ui.theme.ThemeTokens.colors.muted, style = androidx.compose.material3.MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = PageHorizontalPadding, top = 14.dp, bottom = 4.dp))
 }
 
 @Composable
 private fun TransactionRow(transaction: Transaction) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(start = PageHorizontalPadding, end = FabContentEndPadding, top = 9.dp, bottom = 9.dp), verticalAlignment = Alignment.CenterVertically) {
         CategoryDot(transaction.category)
         Column(Modifier.weight(1f).padding(start = 8.dp)) {
             Text(transaction.category)
-            Text(listOfNotNull(transaction.account, transaction.memo).joinToString("・"), color = io.github.takano536.kobako.ui.theme.ThemeTokens.colors.muted, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
+            Text(listOfNotNull(transaction.account, transaction.memo).joinToString("・"), color = io.github.takano536.kobako.ui.theme.ThemeTokens.colors.muted, maxLines = 1, overflow = TextOverflow.Ellipsis, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
         }
         Text(signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = androidx.compose.material3.MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
     }

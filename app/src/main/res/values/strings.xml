@@ -19,8 +19,8 @@
     <string name="current_month">今月に戻る</string>
     <string name="income">収入</string>
     <string name="expense">支出</string>
-    <string name="difference">差額</string>
-    <string name="category_breakdown">カテゴリ別支出</string>
+    <string name="difference">収支差額</string>
+    <string name="category_breakdown">支出カテゴリ別の支出</string>
     <string name="recent_transactions">最近の取引</string>
     <string name="all_transactions">取引一覧</string>
     <string name="no_transactions">この月の取引はありません</string>

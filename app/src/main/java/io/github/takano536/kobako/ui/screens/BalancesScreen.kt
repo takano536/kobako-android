@@ -4,15 +4,16 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.unit.sp
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,9 +80,11 @@ private fun BalanceHeading(group: BalanceGroup) {
     }
     Column(Modifier.fillMaxWidth().padding(top = topPadding)) {
         Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).offset(y = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-            Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
+        Box(Modifier.fillMaxWidth().height(24.dp).padding(horizontal = 16.dp)) {
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
+            }
         }
     }
 }

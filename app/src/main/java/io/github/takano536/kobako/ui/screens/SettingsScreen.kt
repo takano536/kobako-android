@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,8 +45,8 @@ import io.github.takano536.kobako.ui.theme.ThemeTokens
 fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotifications: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LazyColumn(Modifier.fillMaxWidth().offset(y = (-9).dp), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
-        item { PageHeader(stringResource(R.string.nav_settings)) }
+    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
+        item { PageHeader(stringResource(R.string.nav_settings), topPadding = 9.dp) }
         item { SettingsSectionTitle(stringResource(R.string.connection), bottomPadding = 4.dp) }
         item { SettingsRow(stringResource(R.string.server), state.settings.url.ifBlank { stringResource(R.string.not_connected) }, arrow = true) }
         item { SettingsSectionTitle(stringResource(R.string.appearance), bottomPadding = 12.dp) }
@@ -86,14 +85,15 @@ private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         choices.forEachIndexed { index, (key, label) ->
             if (index > 0) Spacer(Modifier.height(if (index == 1) 1.dp else 8.dp))
-            Row(Modifier.fillMaxWidth().height(62.dp).border(1.dp, if (selected == key) ThemeTokens.colors.accent else ThemeTokens.colors.rule, MaterialTheme.shapes.medium).clickable { onSelect(key) }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            val cardPadding = if (key == "system") PaddingValues(start = 8.dp, top = 5.dp, end = 8.dp, bottom = 11.dp) else PaddingValues(8.dp)
+            Row(Modifier.fillMaxWidth().height(62.dp).border(1.dp, if (selected == key) ThemeTokens.colors.accent else ThemeTokens.colors.rule, MaterialTheme.shapes.medium).clickable { onSelect(key) }.padding(cardPadding), verticalAlignment = Alignment.CenterVertically) {
                 ThemePreview(key, Modifier.width(88.dp).height(44.dp))
-                Column(Modifier.padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
+                Column(Modifier.padding(start = 8.dp), verticalArrangement = if (key == "system") Arrangement.spacedBy((-8).dp, Alignment.Top) else Arrangement.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioMark(selected == key)
                         Text(stringResource(label), color = ThemeTokens.colors.ink, modifier = Modifier.padding(start = 8.dp), fontSize = 14.sp, fontWeight = if (selected == key) FontWeight.Medium else FontWeight.Normal)
                     }
-                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, modifier = Modifier.padding(start = 28.dp).offset(y = (-8).dp), fontSize = 11.sp, maxLines = 1)
+                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, modifier = Modifier.padding(start = 28.dp), fontSize = 11.sp, maxLines = 1)
                 }
             }
         }

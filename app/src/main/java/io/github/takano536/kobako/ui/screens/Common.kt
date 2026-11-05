@@ -75,13 +75,13 @@ fun categoryShareLabel(amount: Long, total: Long): String {
 }
 fun signedYen(value: Long): String = when { value < 0 -> "−${yen(value)}"; value > 0 -> "＋${yen(value)}"; else -> yen(value) }
 @Composable
-fun PageHeader(title: String, count: Int? = null) {
+fun PageHeader(title: String, count: Int? = null, topPadding: androidx.compose.ui.unit.Dp = 0.dp) {
     val demo = LocalDemoHeaderState.current
     Row(
         Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .padding(horizontal = PageHorizontalPadding),
+            .height(56.dp - topPadding)
+            .padding(start = PageHorizontalPadding, top = topPadding, end = PageHorizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {

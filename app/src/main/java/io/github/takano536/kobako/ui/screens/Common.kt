@@ -121,9 +121,9 @@ fun PageHeader(title: String, count: Int? = null, topPadding: androidx.compose.u
 }
 
 @Composable
-fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null, bottomTrim: androidx.compose.ui.unit.Dp = 0.dp) {
+fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null, bottomTrim: androidx.compose.ui.unit.Dp = 0.dp, contentTopPadding: androidx.compose.ui.unit.Dp = 0.dp) {
     Box(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = 35.dp).height(40.dp - bottomTrim)) {
-        Row(Modifier.fillMaxWidth().height(40.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth().height(40.dp).padding(top = contentTopPadding), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Text(title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink)
             trailing?.let {
                 CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {

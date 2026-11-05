@@ -2,6 +2,10 @@ package io.github.takano536.kobako.ui.screens
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.ui.theme.categoryColor
@@ -33,13 +37,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,7 +83,29 @@ fun signedYen(value: Long): String = when { value < 0 -> "−${yen(value)}"; val
 @Composable
 fun PageHeader(title: String, count: Int? = null) {
     val demo = LocalDemoHeaderState.current
-    Row(Modifier.fillMaxWidth().height(60.dp).padding(horizontal = PageHorizontalPadding), verticalAlignment = Alignment.CenterVertically) {
+    var headerPosition by remember { mutableStateOf(Offset.Zero) }
+    var exitBounds by remember { mutableStateOf<Rect?>(null) }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .onGloballyPositioned { headerPosition = it.positionInRoot() }
+            .pointerInput(demo.active, headerPosition, exitBounds) {
+                detectTapGestures { offset ->
+                    val bounds = exitBounds ?: return@detectTapGestures
+                    val left = bounds.left - headerPosition.x
+                    val top = bounds.top - headerPosition.y
+                    val extra = ((44.dp.toPx() - bounds.width) / 2f).coerceAtLeast(0f)
+                    if (offset.x in (left - extra)..(left + bounds.width + extra) &&
+                        offset.y in (top - extra)..(top + bounds.height + extra)
+                    ) {
+                        demo.onExit()
+                    }
+                }
+            }
+            .padding(horizontal = PageHorizontalPadding),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 title,
@@ -92,14 +122,14 @@ fun PageHeader(title: String, count: Int? = null) {
         if (demo.active) {
             Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("デモ", color = ThemeTokens.colors.muted, fontSize = 11.sp)
-                Box(
-                    Modifier.size(44.dp).pointerInput(demo.onExit) {
-                        detectTapGestures(onTap = { demo.onExit() })
+                Text(
+                    "終了",
+                    modifier = Modifier.onGloballyPositioned {
+                        exitBounds = Rect(it.positionInRoot(), Size(it.size.width.toFloat(), it.size.height.toFloat()))
                     },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("終了", color = ThemeTokens.colors.accent, fontSize = 12.sp)
-                }
+                    color = ThemeTokens.colors.accent,
+                    fontSize = 12.sp,
+                )
             }
         }
     }

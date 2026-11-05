@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,14 +46,14 @@ import io.github.takano536.kobako.ui.theme.ThemeTokens
 fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotifications: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
+    LazyColumn(Modifier.fillMaxWidth().offset(y = (-9).dp), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
         item { PageHeader(stringResource(R.string.nav_settings)) }
-        item { SettingsSectionTitle(stringResource(R.string.connection)) }
+        item { SettingsSectionTitle(stringResource(R.string.connection), bottomPadding = 4.dp) }
         item { SettingsRow(stringResource(R.string.server), state.settings.url.ifBlank { stringResource(R.string.not_connected) }, arrow = true) }
-        item { SettingsSectionTitle(stringResource(R.string.appearance)) }
+        item { SettingsSectionTitle(stringResource(R.string.appearance), bottomPadding = 12.dp) }
         item { ThemeChoices(state.settings.theme, viewModel::setTheme) }
         item { SettingsRow(stringResource(R.string.payment_notifications), trailing = { Switch(state.settings.notifications, { enabled -> viewModel.setNotifications(enabled); if (enabled) requestNotifications() }) }) }
-        item { SettingsSectionTitle(stringResource(R.string.app_information)) }
+        item { SettingsSectionTitle(stringResource(R.string.app_information), topPadding = 31.dp, bottomPadding = 4.dp) }
         item { SettingsRow(stringResource(R.string.version), BuildConfig.VERSION_NAME) }
         item { SettingsRow(stringResource(R.string.license), "AGPL-3.0-only") }
         item { SettingsRow(stringResource(R.string.source_code), arrow = true, onClick = { uriHandler.openUri("https://github.com/takano536/kobako") }) }
@@ -60,8 +61,8 @@ fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotif
 }
 
 @Composable
-private fun SettingsSectionTitle(title: String) {
-    Text(title, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 8.dp), color = ThemeTokens.colors.ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+private fun SettingsSectionTitle(title: String, topPadding: androidx.compose.ui.unit.Dp = 32.dp, bottomPadding: androidx.compose.ui.unit.Dp = 8.dp) {
+    Text(title, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = topPadding, bottom = bottomPadding), color = ThemeTokens.colors.ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
 }
 @Composable
 private fun SettingsRow(label: String, value: String? = null, arrow: Boolean = false, onClick: (() -> Unit)? = null, trailing: (@Composable () -> Unit)? = null) {
@@ -82,8 +83,9 @@ private fun SettingsRow(label: String, value: String? = null, arrow: Boolean = f
 @Composable
 private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
     val choices = listOf("system" to R.string.theme_system, "light" to R.string.theme_light, "dark" to R.string.theme_dark)
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        choices.forEach { (key, label) ->
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        choices.forEachIndexed { index, (key, label) ->
+            if (index > 0) Spacer(Modifier.height(if (index == 1) 1.dp else 8.dp))
             Row(Modifier.fillMaxWidth().height(62.dp).border(1.dp, if (selected == key) ThemeTokens.colors.accent else ThemeTokens.colors.rule, MaterialTheme.shapes.medium).clickable { onSelect(key) }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 ThemePreview(key, Modifier.width(88.dp).height(44.dp))
                 Column(Modifier.padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
@@ -91,12 +93,12 @@ private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
                         RadioMark(selected == key)
                         Text(stringResource(label), color = ThemeTokens.colors.ink, modifier = Modifier.padding(start = 8.dp), fontSize = 14.sp, fontWeight = if (selected == key) FontWeight.Medium else FontWeight.Normal)
                     }
-                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, modifier = Modifier.padding(start = 28.dp), fontSize = 11.sp, maxLines = 1)
+                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, modifier = Modifier.padding(start = 28.dp).offset(y = (-8).dp), fontSize = 11.sp, maxLines = 1)
                 }
             }
         }
     }
-    Spacer(Modifier.height(8.dp))
+    Spacer(Modifier.height(7.dp))
 }
 
 @Composable

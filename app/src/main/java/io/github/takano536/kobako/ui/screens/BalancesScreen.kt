@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -48,7 +49,7 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
         if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
         balances?.let { data ->
             item {
-                SummaryPanel {
+                SummaryPanel(topPadding = 7.dp, bottomPadding = 17.dp) {
                     Metric(stringResource(R.string.net_assets), data.summary.net, ThemeTokens.colors.ink, primary = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Metric(stringResource(R.string.assets), data.summary.assets)
@@ -71,9 +72,14 @@ private fun BalanceHeading(group: BalanceGroup) {
         "credit_card" -> listOf(stringResource(R.string.settlement_scheduled), stringResource(R.string.unbilled))
         else -> listOf(stringResource(R.string.balance))
     }
-    Column(Modifier.fillMaxWidth().padding(top = 20.dp)) {
+    val topPadding = when (group.systemKey) {
+        "cash" -> 33.dp
+        "credit_card" -> 31.dp
+        else -> 29.dp
+    }
+    Column(Modifier.fillMaxWidth().padding(top = topPadding)) {
         Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).offset(y = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
             Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
         }

@@ -121,12 +121,14 @@ fun PageHeader(title: String, count: Int? = null) {
 }
 
 @Composable
-fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = 35.dp).height(40.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink)
-        trailing?.let {
-            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-                it()
+fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null, bottomTrim: androidx.compose.ui.unit.Dp = 0.dp) {
+    Box(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = 35.dp).height(40.dp - bottomTrim)) {
+        Row(Modifier.fillMaxWidth().height(40.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink)
+            trailing?.let {
+                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                    it()
+                }
             }
         }
     }
@@ -163,14 +165,14 @@ fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, pr
     }
 }
 @Composable
-fun SummaryPanel(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+fun SummaryPanel(topPadding: androidx.compose.ui.unit.Dp = 12.dp, bottomPadding: androidx.compose.ui.unit.Dp = 12.dp, content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
     val ruleColor = ThemeTokens.colors.rule
     Column(
         Modifier.fillMaxWidth()
             .drawBehind {
                 drawLine(ruleColor, Offset(0f, size.height - 1.dp.toPx()), Offset(size.width, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx())
             }
-            .padding(start = PageHorizontalPadding, top = 12.dp, end = PageHorizontalPadding, bottom = 12.dp),
+            .padding(start = PageHorizontalPadding, top = topPadding, end = PageHorizontalPadding, bottom = bottomPadding),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom, content = content)
     }

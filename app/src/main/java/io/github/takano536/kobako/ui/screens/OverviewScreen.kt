@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -84,7 +85,7 @@ fun OverviewScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHost
             }
             summary?.let { data ->
                 item { SectionTitle(stringResource(R.string.category_breakdown), trailing = { androidx.compose.material3.TextButton({ nav.navigate(Routes.transactions) }) { Text(stringResource(R.string.see_all), color = ThemeTokens.colors.muted, fontSize = 12.sp) } }) }
-                items(data.expenseCategories.take(7), key = { "category-${it.categoryId}" }) { category -> CategoryRow(category.categoryName, category.total, data.expense) }
+                itemsIndexed(data.expenseCategories.take(7), key = { _, category -> "category-${category.categoryId}" }) { index, category -> CategoryRow(category.categoryName, category.total, data.expense, rowHeight = if (index % 2 == 0) 49.dp else 50.dp) }
                 item { SectionTitle(stringResource(R.string.recent_transactions), trailing = { androidx.compose.material3.TextButton({ nav.navigate(Routes.transactions) }) { Text(stringResource(R.string.all_transactions), color = ThemeTokens.colors.muted, fontSize = 12.sp) } }) }
                 if (transactions.isEmpty()) item { EmptyMessage(stringResource(R.string.no_transactions)) }
                 else items(transactions.take(5), key = { "recent-transaction-${it.id}" }) { tx -> RecentTransactionRow(tx.occurredOn.format(java.time.format.DateTimeFormatter.ofPattern("M月d日（E）", java.util.Locale.JAPANESE)), tx.category, tx.account, tx.memo, tx.amount, tx.type, tx.origin) }

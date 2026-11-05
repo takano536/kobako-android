@@ -20,7 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,11 +66,13 @@ private fun SettingsSectionTitle(title: String) {
 @Composable
 private fun SettingsRow(label: String, value: String? = null, arrow: Boolean = false, onClick: (() -> Unit)? = null, trailing: (@Composable () -> Unit)? = null) {
     val contents: @Composable () -> Unit = {
-        Row(Modifier.fillMaxWidth().height(44.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, color = ThemeTokens.colors.ink, modifier = Modifier.weight(1f), fontSize = 14.sp)
-            if (value != null) Text(value, color = ThemeTokens.colors.muted, fontSize = 14.sp, maxLines = 1)
-            trailing?.invoke()
-            if (trailing == null) Box(Modifier.width(20.dp), contentAlignment = Alignment.CenterEnd) { if (arrow) Text("→", color = ThemeTokens.colors.muted, fontSize = 14.sp) }
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+            Row(Modifier.fillMaxWidth().height(44.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(label, color = ThemeTokens.colors.ink, modifier = Modifier.weight(1f), fontSize = 14.sp)
+                if (value != null) Text(value, color = ThemeTokens.colors.muted, fontSize = 14.sp, maxLines = 1)
+                trailing?.invoke()
+                if (trailing == null) Box(Modifier.width(20.dp), contentAlignment = Alignment.CenterEnd) { if (arrow) Text("→", color = ThemeTokens.colors.muted, fontSize = 14.sp) }
+            }
         }
     }
     if (onClick == null) contents() else Row(Modifier.fillMaxWidth().clickable(onClick = onClick)) { contents() }
@@ -80,7 +84,7 @@ private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
     val choices = listOf("system" to R.string.theme_system, "light" to R.string.theme_light, "dark" to R.string.theme_dark)
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         choices.forEach { (key, label) ->
-            Row(Modifier.fillMaxWidth().height(64.dp).border(1.dp, if (selected == key) ThemeTokens.colors.accent else ThemeTokens.colors.rule, MaterialTheme.shapes.medium).clickable { onSelect(key) }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().height(62.dp).border(1.dp, if (selected == key) ThemeTokens.colors.accent else ThemeTokens.colors.rule, MaterialTheme.shapes.medium).clickable { onSelect(key) }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 ThemePreview(key, Modifier.width(88.dp).height(44.dp))
                 Column(Modifier.padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

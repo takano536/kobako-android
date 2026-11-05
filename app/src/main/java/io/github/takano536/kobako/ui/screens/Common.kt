@@ -198,10 +198,10 @@ fun ReadOnlyFab(visible: Boolean, onClick: () -> Unit, modifier: Modifier = Modi
 fun CategoryDot(name: String, modifier: Modifier = Modifier, color: Color? = null) { Box(Modifier.then(modifier).size(6.dp).clip(CircleShape).background(color ?: ThemeTokens.colors.categoryColor(name))) }
 
 @Composable
-fun CategoryRow(name: String, amount: Long, total: Long) {
+fun CategoryRow(name: String, amount: Long, total: Long, rowHeight: androidx.compose.ui.unit.Dp = 49.5.dp) {
     val share = if (total > 0) amount.toDouble() / total else 0.0
     val shareLabel = categoryShareLabel(amount, total)
-    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
+    Column(Modifier.fillMaxWidth().height(rowHeight).padding(horizontal = PageHorizontalPadding)) {
         Row(Modifier.fillMaxWidth().height(28.dp), verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(name)
             Text(name, Modifier.padding(start = 8.dp).weight(1f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)

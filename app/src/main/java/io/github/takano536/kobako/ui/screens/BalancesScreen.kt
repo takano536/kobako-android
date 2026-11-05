@@ -80,7 +80,7 @@ private fun BalanceHeading(group: BalanceGroup) {
     }
     Column(Modifier.fillMaxWidth().padding(top = topPadding)) {
         Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
-        Box(Modifier.fillMaxWidth().height(24.dp).padding(horizontal = 16.dp)) {
+        Box(Modifier.fillMaxWidth().heightIn(min = 24.dp).padding(horizontal = 16.dp)) {
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
                 Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }

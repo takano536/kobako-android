@@ -1,6 +1,7 @@
 package io.github.takano536.kobako.ui.screens
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.ui.theme.categoryColor
@@ -30,7 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.runtime.Composable
@@ -58,6 +58,12 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
+data class DemoHeaderState(
+    val active: Boolean = false,
+    val onExit: () -> Unit = {},
+)
+
+val LocalDemoHeaderState = staticCompositionLocalOf { DemoHeaderState() }
 
 fun yen(value: Long): String = NumberFormat.getNumberInstance(Locale.JAPAN).format(kotlin.math.abs(value)) + "円"
 fun categoryShareLabel(amount: Long, total: Long): String {
@@ -68,9 +74,34 @@ fun signedYen(value: Long): String = when { value < 0 -> "−${yen(value)}"; val
 
 @Composable
 fun PageHeader(title: String, count: Int? = null) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, fontSize = 23.sp, lineHeight = 28.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink)
-        count?.let { Text("${it}件", modifier = Modifier.padding(start = 8.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp) }
+    val demo = LocalDemoHeaderState.current
+    Row(Modifier.fillMaxWidth().height(60.dp).padding(horizontal = PageHorizontalPadding), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                title,
+                fontSize = 23.sp,
+                lineHeight = 28.sp,
+                letterSpacing = (-0.03).em,
+                fontWeight = FontWeight.Medium,
+                color = ThemeTokens.colors.ink,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            count?.let { Text("${it}件", modifier = Modifier.padding(start = 8.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp) }
+        }
+        if (demo.active) {
+            Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("デモ", color = ThemeTokens.colors.muted, fontSize = 11.sp)
+                Box(
+                    Modifier.size(44.dp).pointerInput(demo.onExit) {
+                        detectTapGestures(onTap = { demo.onExit() })
+                    },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("終了", color = ThemeTokens.colors.accent, fontSize = 12.sp)
+                }
+            }
+        }
     }
 }
 

@@ -20,6 +20,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +42,9 @@ import io.github.takano536.kobako.AppState
 import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.ui.screens.BalancesScreen
+import io.github.takano536.kobako.ui.screens.DemoHeaderState
 import io.github.takano536.kobako.ui.screens.FixedCostsScreen
+import io.github.takano536.kobako.ui.screens.LocalDemoHeaderState
 import io.github.takano536.kobako.ui.screens.OverviewScreen
 import io.github.takano536.kobako.ui.screens.SettingsScreen
 import io.github.takano536.kobako.ui.screens.TransactionsScreen
@@ -118,16 +121,17 @@ private fun AppShell(nav: NavHostController, viewModel: AppViewModel, state: App
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {
-            if (state.settings.demo) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(R.string.demo_active), color = ThemeTokens.colors.muted, style = MaterialTheme.typography.bodySmall)
-                    androidx.compose.material3.TextButton(onClick = {
+            CompositionLocalProvider(
+                LocalDemoHeaderState provides DemoHeaderState(
+                    active = state.settings.demo,
+                    onExit = {
                         viewModel.exitDemo()
                         nav.navigate(Routes.onboarding) { popUpTo(0) }
-                    }) { Text(stringResource(R.string.demo_exit), color = ThemeTokens.colors.accent) }
-                }
+                    },
+                ),
+            ) {
+                content(snackbarHostState)
             }
-            content(snackbarHostState)
         }
     }
 }

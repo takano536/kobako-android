@@ -106,5 +106,5 @@ private fun <T> TransactionMenuChip(options: List<Pair<T?, String>>, selected: T
 
 @Composable
 private fun DateHeader(date: LocalDate, spaced: Boolean) {
-    Text(date.format(DateTimeFormatter.ofPattern("M月d日（E）", Locale.JAPANESE)), color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (spaced) 16.dp else 0.dp).heightIn(min = 25.dp))
+    Text(date.format(DateTimeFormatter.ofPattern("M月d日（E）", Locale.JAPANESE)), color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (spaced) 16.dp else 4.dp).heightIn(min = 25.dp))
 }

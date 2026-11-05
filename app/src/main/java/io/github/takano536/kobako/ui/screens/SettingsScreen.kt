@@ -8,11 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
@@ -46,13 +47,13 @@ fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotif
     val uriHandler = LocalUriHandler.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
-        item { PageHeader(stringResource(R.string.nav_settings), topPadding = 9.dp) }
-        item { SettingsSectionTitle(stringResource(R.string.connection), bottomPadding = 4.dp) }
+        item { PageHeader(stringResource(R.string.nav_settings)) }
+        item { SettingsSectionTitle(stringResource(R.string.connection)) }
         item { SettingsRow(stringResource(R.string.server), state.settings.url.ifBlank { stringResource(R.string.not_connected) }, arrow = true) }
-        item { SettingsSectionTitle(stringResource(R.string.appearance), bottomPadding = 12.dp) }
+        item { SettingsSectionTitle(stringResource(R.string.appearance)) }
         item { ThemeChoices(state.settings.theme, viewModel::setTheme) }
         item { SettingsRow(stringResource(R.string.payment_notifications), trailing = { Switch(state.settings.notifications, { enabled -> viewModel.setNotifications(enabled); if (enabled) requestNotifications() }) }) }
-        item { SettingsSectionTitle(stringResource(R.string.app_information), topPadding = 31.dp, bottomPadding = 4.dp) }
+        item { SettingsSectionTitle(stringResource(R.string.app_information)) }
         item { SettingsRow(stringResource(R.string.version), BuildConfig.VERSION_NAME) }
         item { SettingsRow(stringResource(R.string.license), "AGPL-3.0-only") }
         item { SettingsRow(stringResource(R.string.source_code), arrow = true, onClick = { uriHandler.openUri("https://github.com/takano536/kobako") }) }
@@ -60,18 +61,18 @@ fun SettingsScreen(viewModel: AppViewModel, nav: NavHostController, requestNotif
 }
 
 @Composable
-private fun SettingsSectionTitle(title: String, topPadding: androidx.compose.ui.unit.Dp = 32.dp, bottomPadding: androidx.compose.ui.unit.Dp = 8.dp) {
-    Text(title, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = topPadding, bottom = bottomPadding), color = ThemeTokens.colors.ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+private fun SettingsSectionTitle(title: String) {
+    Text(title, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 8.dp), color = ThemeTokens.colors.ink, fontSize = 15.sp, lineHeight = 19.5.sp, fontWeight = FontWeight.Medium)
 }
 @Composable
 private fun SettingsRow(label: String, value: String? = null, arrow: Boolean = false, onClick: (() -> Unit)? = null, trailing: (@Composable () -> Unit)? = null) {
     val contents: @Composable () -> Unit = {
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-            Row(Modifier.fillMaxWidth().height(44.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(label, color = ThemeTokens.colors.ink, modifier = Modifier.weight(1f), fontSize = 14.sp)
-                if (value != null) Text(value, color = ThemeTokens.colors.muted, fontSize = 14.sp, maxLines = 1)
+            Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(label, color = ThemeTokens.colors.ink, modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp)
+                if (value != null) Text(value, color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, maxLines = 1)
                 trailing?.invoke()
-                if (trailing == null) Box(Modifier.width(20.dp), contentAlignment = Alignment.CenterEnd) { if (arrow) Text("→", color = ThemeTokens.colors.muted, fontSize = 14.sp) }
+                if (trailing == null) Box(Modifier.width(20.dp), contentAlignment = Alignment.CenterEnd) { if (arrow) Text("→", color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp) }
             }
         }
     }
@@ -91,9 +92,9 @@ private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
                 Column(Modifier.padding(start = 8.dp), verticalArrangement = if (key == "system") Arrangement.spacedBy((-8).dp, Alignment.Top) else Arrangement.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioMark(selected == key)
-                        Text(stringResource(label), color = ThemeTokens.colors.ink, modifier = Modifier.padding(start = 8.dp), fontSize = 14.sp, fontWeight = if (selected == key) FontWeight.Medium else FontWeight.Normal)
+                        Text(stringResource(label), color = ThemeTokens.colors.ink, modifier = Modifier.padding(start = 8.dp), fontSize = 14.sp, lineHeight = 22.4.sp, fontWeight = if (selected == key) FontWeight.Medium else FontWeight.Normal)
                     }
-                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, modifier = Modifier.padding(start = 28.dp), fontSize = 11.sp, maxLines = 1)
+                    if (key == "system") Text(stringResource(R.string.theme_system_hint), color = ThemeTokens.colors.muted, modifier = Modifier.padding(start = 28.dp), fontSize = 11.sp, lineHeight = 16.sp, maxLines = 1)
                 }
             }
         }

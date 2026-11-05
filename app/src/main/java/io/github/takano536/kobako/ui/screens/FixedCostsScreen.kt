@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import io.github.takano536.kobako.AppViewModel
 import io.github.takano536.kobako.R
@@ -60,7 +61,7 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
                 item {
                     SummaryPanel {
                         Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.colors.moneyNegative, primary = true)
-                        Metric(stringResource(R.string.annualized), fixed.annual)
+                        Metric(stringResource(R.string.annualized), fixed.annual, ThemeTokens.colors.moneyNegative)
                     }
                 }
                 item { SectionTitle(stringResource(R.string.fixed_breakdown)) }
@@ -75,12 +76,12 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
 private fun FixedCostRow(item: FixedCost) {
     val colors = ThemeTokens.colors
     Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(item.name, style = MaterialTheme.typography.bodyMedium)
-                Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, style = MaterialTheme.typography.bodySmall)
+                Text(item.name, fontSize = 14.sp, lineHeight = 22.4.sp)
+                Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
             }
-            Text(yen(item.amount), color = colors.moneyNegative, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
+            Text(yen(item.amount), color = colors.moneyNegative, fontSize = 14.sp, lineHeight = 22.4.sp, style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum", platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)))
         }
         HorizontalDivider(color = colors.rule, thickness = 1.dp)
     }

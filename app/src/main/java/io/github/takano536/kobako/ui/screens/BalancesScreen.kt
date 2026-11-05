@@ -50,11 +50,13 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
         if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
         balances?.let { data ->
             item {
-                SummaryPanel(topPadding = 7.dp, bottomPadding = 17.dp) {
-                    Metric(stringResource(R.string.net_assets), data.summary.net, ThemeTokens.colors.ink, primary = true)
+                SummaryPanel {
+                    val netColor = if (data.summary.net == 0L) ThemeTokens.colors.ink else if (data.summary.net > 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative
+                    Metric(stringResource(R.string.net_assets), data.summary.net, netColor, primary = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Metric(stringResource(R.string.assets), data.summary.assets)
-                        Metric(stringResource(R.string.liabilities), -kotlin.math.abs(data.summary.liabilities), ThemeTokens.colors.moneyNegative, signed = true)
+                        Metric(stringResource(R.string.assets), data.summary.assets, if (data.summary.assets == 0L) ThemeTokens.colors.ink else ThemeTokens.colors.moneyPositive)
+                        val liabilities = -kotlin.math.abs(data.summary.liabilities)
+                        Metric(stringResource(R.string.liabilities), liabilities, if (liabilities == 0L) ThemeTokens.colors.ink else ThemeTokens.colors.moneyNegative, signed = true)
                     }
                 }
             }
@@ -73,18 +75,11 @@ private fun BalanceHeading(group: BalanceGroup) {
         "credit_card" -> listOf(stringResource(R.string.settlement_scheduled), stringResource(R.string.unbilled))
         else -> listOf(stringResource(R.string.balance))
     }
-    val topPadding = when (group.systemKey) {
-        "cash" -> 33.dp
-        "credit_card" -> 31.dp
-        else -> 29.dp
-    }
-    Column(Modifier.fillMaxWidth().padding(top = topPadding)) {
-        Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
-        Box(Modifier.fillMaxWidth().heightIn(min = 24.dp).padding(horizontal = 16.dp)) {
-            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-                Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
-            }
+    Column(Modifier.fillMaxWidth().padding(top = 29.dp)) {
+        Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 15.6.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+            Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 15.6.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
         }
     }
 }
@@ -97,11 +92,12 @@ private fun AccountRow(account: BalanceAccount, systemKey: String) {
         else -> listOf(account.balance)
     }
     Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(account.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(account.name, modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp)
             Row(Modifier.fillMaxWidth(0.6f)) {
                 columns.forEach { value ->
-                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = ThemeTokens.colors.ink, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
+                    val color = if (value == 0L) ThemeTokens.colors.ink else if (value > 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative
+                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = color, fontSize = 14.sp, lineHeight = 22.4.sp, style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum", platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)))
                 }
             }
         }

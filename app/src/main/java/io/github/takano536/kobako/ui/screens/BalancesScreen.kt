@@ -101,7 +101,7 @@ private fun AccountRow(account: BalanceAccount, systemKey: String) {
             Text(account.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
             Row(Modifier.fillMaxWidth(0.6f)) {
                 columns.forEach { value ->
-                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = if (value < 0) ThemeTokens.colors.moneyNegative else ThemeTokens.colors.ink, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
+                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = ThemeTokens.colors.ink, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
                 }
             }
         }

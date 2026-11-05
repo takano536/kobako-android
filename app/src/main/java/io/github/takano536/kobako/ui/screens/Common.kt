@@ -213,12 +213,12 @@ fun CategoryRow(name: String, amount: Long, total: Long, rowHeight: androidx.com
     val share = if (total > 0) amount.toDouble() / total else 0.0
     val shareLabel = categoryShareLabel(amount, total)
     Column(Modifier.fillMaxWidth().heightIn(min = rowHeight).padding(horizontal = PageHorizontalPadding)) {
-        Row(Modifier.fillMaxWidth().height(28.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(name)
             Text(name, Modifier.padding(start = 8.dp).weight(1f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(yen(amount), fontSize = 14.sp, style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"))
         }
-        Row(Modifier.fillMaxWidth().height(20.dp), verticalAlignment = Alignment.Top) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.Top) {
             Box(Modifier.weight(1f).padding(top = 4.dp).height(2.dp).background(ThemeTokens.colors.bar)) { Box(Modifier.fillMaxWidth(share.toFloat().coerceIn(0f, 1f)).height(2.dp).background(ThemeTokens.colors.categoryBar)) }
             Text(shareLabel, Modifier.width(57.dp), textAlign = TextAlign.Start, color = ThemeTokens.colors.muted, fontSize = 12.sp)
         }

@@ -108,17 +108,17 @@ fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
 
 @Composable
 fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, primary: Boolean = false, signed: Boolean = false) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, fontSize = if (primary) 14.sp else 11.sp, lineHeight = if (primary) 20.3.sp else 16.sp, fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal, style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)))
         Text(if (signed) signedYen(value) else yen(value), color = color, style = TextStyle(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum", platformStyle = PlatformTextStyle(includeFontPadding = false)))
     }
 }
 
 @Composable
-fun SummaryPanel(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+fun SummaryPanel(topPadding: androidx.compose.ui.unit.Dp = 10.dp, content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
     val compact = LocalConfiguration.current.screenHeightDp <= 820
     val ruleColor = ThemeTokens.colors.rule
-    Column(Modifier.fillMaxWidth().drawBehind { drawLine(ruleColor, Offset(0f, size.height - 1.dp.toPx()), Offset(size.width, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx()) }.padding(start = PageHorizontalPadding, top = 16.dp, end = PageHorizontalPadding, bottom = if (compact) 4.dp else 12.dp)) {
+    Column(Modifier.fillMaxWidth().drawBehind { drawLine(ruleColor, Offset(0f, size.height - 1.dp.toPx()), Offset(size.width, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx()) }.padding(start = PageHorizontalPadding, top = topPadding, end = PageHorizontalPadding, bottom = if (compact) 4.dp else 7.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom, content = content)
     }
 }
@@ -158,14 +158,13 @@ fun CategoryDot(name: String, modifier: Modifier = Modifier, color: Color? = nul
 fun CategoryRow(name: String, amount: Long, total: Long) {
     val share = if (total > 0) amount.toDouble() / total else 0.0
     val shareLabel = categoryShareLabel(amount, total)
-    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding), verticalArrangement = Arrangement.spacedBy(1.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.Top) {
             CategoryDot(name)
             Text(name, Modifier.padding(start = 8.dp).weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(yen(amount), fontSize = 14.sp, lineHeight = 22.4.sp, style = TextStyle(fontFeatureSettings = "tnum", platformStyle = PlatformTextStyle(includeFontPadding = false)))
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.Top) {
-            Box(Modifier.weight(1f).padding(top = 4.dp).height(2.dp).background(ThemeTokens.colors.bar)) { Box(Modifier.fillMaxWidth(share.toFloat().coerceIn(0f, 1f)).height(2.dp).background(ThemeTokens.colors.categoryBar)) }
             Text(shareLabel, Modifier.width(57.dp), textAlign = TextAlign.Start, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
         }
     }

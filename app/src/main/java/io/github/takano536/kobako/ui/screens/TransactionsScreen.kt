@@ -78,7 +78,7 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
                         TransactionMenuChip(accounts, account, { account = it })
                         FilterChip("APIのみ", apiOnly, { apiOnly = !apiOnly }, hasCheck = true)
                     }
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(14.dp))
                 }
             }
             when {

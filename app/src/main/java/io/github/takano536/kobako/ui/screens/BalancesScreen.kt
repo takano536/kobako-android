@@ -50,7 +50,7 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
         if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
         balances?.let { data ->
             item {
-                SummaryPanel {
+                SummaryPanel(topPadding = 24.dp) {
                     val netColor = if (data.summary.net == 0L) ThemeTokens.colors.ink else if (data.summary.net > 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative
                     Metric(stringResource(R.string.net_assets), data.summary.net, netColor, primary = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -77,7 +77,7 @@ private fun BalanceHeading(group: BalanceGroup) {
     }
     Column(Modifier.fillMaxWidth().padding(top = 29.dp)) {
         Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 15.6.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
             Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 15.6.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
         }

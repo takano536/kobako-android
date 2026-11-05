@@ -44,13 +44,15 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.Dp
 import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import io.github.takano536.kobako.domain.Transaction
@@ -78,7 +80,7 @@ fun PageHeader(title: String, count: Int? = null) {
     Row(
         Modifier
             .fillMaxWidth()
-            .height(60.dp)
+            .height(56.dp)
             .padding(horizontal = PageHorizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -120,20 +122,46 @@ fun PageHeader(title: String, count: Int? = null) {
 
 @Composable
 fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = 32.dp).heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = 35.dp).height(40.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
         Text(title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink)
-        trailing?.invoke()
+        trailing?.let {
+            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                it()
+            }
+        }
     }
 }
 
 @Composable
 fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, primary: Boolean = false, signed: Boolean = false) {
     Column {
-        Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, fontSize = if (primary) 14.sp else 11.sp, fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal)
-        Text(if (signed) signedYen(value) else yen(value), color = color, style = MaterialTheme.typography.bodyLarge.copy(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 31.sp else 21.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"))
+        Text(
+            label,
+            color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted,
+            fontSize = if (primary) 14.sp else 11.sp,
+            lineHeight = if (primary) 19.sp else 16.sp,
+            fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal,
+            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+        )
+        Text(
+            if (signed) signedYen(value) else yen(value),
+            modifier = Modifier.height(if (primary) 30.dp else 21.dp),
+            color = color,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = if (primary) 26.sp else 16.sp,
+                lineHeight = if (primary) 30.sp else 21.sp,
+                letterSpacing = if (primary) (-0.04).sp else 0.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFeatureSettings = "tnum",
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                lineHeightStyle = LineHeightStyle(
+                    alignment = LineHeightStyle.Alignment.Center,
+                    trim = LineHeightStyle.Trim.Both,
+                ),
+            ),
+        )
     }
 }
-
 @Composable
 fun SummaryPanel(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
     val ruleColor = ThemeTokens.colors.rule
@@ -142,7 +170,7 @@ fun SummaryPanel(content: @Composable androidx.compose.foundation.layout.RowScop
             .drawBehind {
                 drawLine(ruleColor, Offset(0f, size.height - 1.dp.toPx()), Offset(size.width, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx())
             }
-            .padding(start = PageHorizontalPadding, top = 16.dp, end = PageHorizontalPadding, bottom = 12.dp),
+            .padding(start = PageHorizontalPadding, top = 12.dp, end = PageHorizontalPadding, bottom = 12.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom, content = content)
     }
@@ -150,7 +178,7 @@ fun SummaryPanel(content: @Composable androidx.compose.foundation.layout.RowScop
 
 @Composable
 fun MonthSelector(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(start = PageHorizontalPadding).padding(bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().height(44.dp).padding(start = PageHorizontalPadding), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onPrev, modifier = Modifier.offset(x = (-22).dp).size(44.dp)) { Icon(painterResource(R.drawable.ic_action_chevron_left), stringResource(R.string.previous_month), tint = ThemeTokens.colors.muted, modifier = Modifier.size(16.dp)) }
         Text(month.format(DateTimeFormatter.ofPattern("yyyy年M月")), modifier = Modifier.widthIn(min = 44.dp), textAlign = TextAlign.Center, fontSize = 12.sp, color = ThemeTokens.colors.ink, maxLines = 1)
         IconButton(onClick = onNext, modifier = Modifier.size(44.dp)) { Icon(painterResource(R.drawable.ic_action_chevron_right), stringResource(R.string.next_month), tint = ThemeTokens.colors.muted, modifier = Modifier.size(16.dp)) }
@@ -181,7 +209,7 @@ fun CategoryRow(name: String, amount: Long, total: Long) {
         }
         Row(Modifier.fillMaxWidth().height(20.dp), verticalAlignment = Alignment.Top) {
             Box(Modifier.weight(1f).padding(top = 4.dp).height(2.dp).background(ThemeTokens.colors.bar)) { Box(Modifier.fillMaxWidth(share.toFloat().coerceIn(0f, 1f)).height(2.dp).background(ThemeTokens.colors.categoryBar)) }
-            Text(shareLabel, Modifier.width(44.dp), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, fontSize = 12.sp)
+            Text(shareLabel, Modifier.width(57.dp), textAlign = TextAlign.Start, color = ThemeTokens.colors.muted, fontSize = 12.sp)
         }
     }
 }

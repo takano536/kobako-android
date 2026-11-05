@@ -59,7 +59,7 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
             data != null -> {
                 val fixed = requireNotNull(data)
                 item {
-                    SummaryPanel(topPadding = 24.dp) {
+                    SummaryPanel {
                         Metric(stringResource(R.string.fixed_monthly), fixed.monthly, ThemeTokens.colors.moneyNegative, primary = true)
                         Metric(stringResource(R.string.annualized), fixed.annual, ThemeTokens.colors.moneyNegative)
                     }
@@ -78,8 +78,8 @@ private fun FixedCostRow(item: FixedCost) {
     Column(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(item.name, fontSize = 14.sp, lineHeight = 22.4.sp)
-                Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
+                Text(item.name, fontSize = 14.sp, lineHeight = 22.4.sp, style = androidx.compose.ui.text.TextStyle(platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)))
+                Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp, style = androidx.compose.ui.text.TextStyle(platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)))
             }
             Text(yen(item.amount), color = colors.moneyNegative, fontSize = 14.sp, lineHeight = 22.4.sp, style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum", platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)))
         }

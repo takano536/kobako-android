@@ -50,7 +50,7 @@ fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
         if (failed) item { EmptyMessage(stringResource(R.string.read_error)) }
         balances?.let { data ->
             item {
-                SummaryPanel(topPadding = 24.dp) {
+                SummaryPanel {
                     val netColor = if (data.summary.net == 0L) ThemeTokens.colors.ink else if (data.summary.net > 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative
                     Metric(stringResource(R.string.net_assets), data.summary.net, netColor, primary = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {

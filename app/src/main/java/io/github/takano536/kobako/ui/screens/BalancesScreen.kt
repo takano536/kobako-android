@@ -34,6 +34,7 @@ import io.github.takano536.kobako.domain.BalanceGroup
 import io.github.takano536.kobako.domain.Balances
 import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.theme.KobakoTextStyle
 import io.github.takano536.kobako.ui.theme.ListBottomPadding
 @Composable
 fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
@@ -97,7 +98,7 @@ private fun AccountRow(account: BalanceAccount, systemKey: String) {
             Row(Modifier.fillMaxWidth(0.6f)) {
                 columns.forEach { value ->
                     val color = if (value == 0L) ThemeTokens.colors.ink else if (value > 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative
-                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = color, fontSize = 14.sp, lineHeight = 22.4.sp, style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum", platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)))
+                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = color, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle.copy(fontFeatureSettings = "tnum"))
                 }
             }
         }

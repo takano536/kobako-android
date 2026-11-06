@@ -44,8 +44,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.platform.LocalConfiguration
 import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
+import io.github.takano536.kobako.ui.theme.KobakoTextStyle
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import io.github.takano536.kobako.domain.Transaction
 import java.text.NumberFormat
@@ -83,8 +82,8 @@ fun PageHeader(title: String, count: Int? = null) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)))
-            count?.let { Text("${it}件", modifier = Modifier.padding(start = 8.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))) }
+            Text(title, fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle)
+            count?.let { Text("${it}件", modifier = Modifier.padding(start = 8.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle) }
         }
         if (demo.active) {
             Row(Modifier.clickable(onClick = demo.onExit).padding(start = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -109,8 +108,8 @@ fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
 @Composable
 fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, primary: Boolean = false, signed: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, fontSize = if (primary) 14.sp else 11.sp, lineHeight = if (primary) 20.3.sp else 16.sp, fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal, style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)))
-        Text(if (signed) signedYen(value) else yen(value), color = color, style = TextStyle(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum", platformStyle = PlatformTextStyle(includeFontPadding = false)))
+        Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, fontSize = if (primary) 14.sp else 11.sp, lineHeight = if (primary) 20.3.sp else 16.sp, fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal, style = KobakoTextStyle)
+        Text(if (signed) signedYen(value) else yen(value), color = color, style = KobakoTextStyle.copy(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"))
 }
 }
 
@@ -162,7 +161,7 @@ fun CategoryRow(name: String, amount: Long, total: Long) {
         Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.Top) {
             CategoryDot(name)
             Text(name, Modifier.padding(start = 8.dp).weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(yen(amount), fontSize = 14.sp, lineHeight = 22.4.sp, style = TextStyle(fontFeatureSettings = "tnum", platformStyle = PlatformTextStyle(includeFontPadding = false)))
+            Text(yen(amount), fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle.copy(fontFeatureSettings = "tnum"))
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.Top) {
             Text(shareLabel, Modifier.width(57.dp), textAlign = TextAlign.Start, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
@@ -189,7 +188,7 @@ fun TransactionGridRow(transaction: Transaction, date: String? = null) {
                     if (transaction.origin == "api") Text("API", Modifier.padding(start = 6.dp).background(ThemeTokens.colors.surfaceHover, RoundedCornerShape(50)).padding(horizontal = 5.dp, vertical = 1.dp), color = ThemeTokens.colors.accentStrong, fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            Text(if (transaction.type == "transfer") yen(transaction.amount) else signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = TextStyle(fontSize = 14.sp, lineHeight = 22.4.sp, fontFeatureSettings = "tnum", platformStyle = PlatformTextStyle(includeFontPadding = false)), textAlign = TextAlign.End)
+            Text(if (transaction.type == "transfer") yen(transaction.amount) else signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp, fontFeatureSettings = "tnum"), textAlign = TextAlign.End)
         }
     }
 }

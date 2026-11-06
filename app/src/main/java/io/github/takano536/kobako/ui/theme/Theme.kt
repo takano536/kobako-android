@@ -2,6 +2,7 @@ package io.github.takano536.kobako.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -12,6 +13,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,17 +74,21 @@ fun categoryDotIndex(name: String): Int = when (name) {
 }
 
 fun KobakoColors.categoryColor(name: String): Color = categoryDots[categoryDotIndex(name)]
+val KobakoTextStyle = TextStyle(
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None, LineHeightStyle.Mode.Fixed),
+)
 private val KobakoTypography = Typography(
-    displaySmall = TextStyle(fontSize = 30.sp, lineHeight = 35.sp, fontWeight = FontWeight.Medium, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    titleLarge = TextStyle(fontSize = 21.sp, lineHeight = 24.15.sp, fontWeight = FontWeight.Medium, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    titleMedium = TextStyle(fontSize = 15.sp, lineHeight = 19.5.sp, fontWeight = FontWeight.Medium, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    titleSmall = TextStyle(fontSize = 14.sp, lineHeight = 22.4.sp, fontWeight = FontWeight.Medium, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    bodyLarge = TextStyle(fontSize = 16.sp, lineHeight = 18.4.sp, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    bodyMedium = TextStyle(fontSize = 14.sp, lineHeight = 22.4.sp, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    bodySmall = TextStyle(fontSize = 12.sp, lineHeight = 17.4.sp, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    labelLarge = TextStyle(fontSize = 14.sp, lineHeight = 20.3.sp, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    labelMedium = TextStyle(fontSize = 12.sp, lineHeight = 15.6.sp, platformStyle = PlatformTextStyle(includeFontPadding = false)),
-    labelSmall = TextStyle(fontSize = 11.sp, lineHeight = 16.sp, platformStyle = PlatformTextStyle(includeFontPadding = false)),
+    displaySmall = KobakoTextStyle.copy(fontSize = 30.sp, lineHeight = 35.sp, fontWeight = FontWeight.Medium),
+    titleLarge = KobakoTextStyle.copy(fontSize = 21.sp, lineHeight = 24.15.sp, fontWeight = FontWeight.Medium),
+    titleMedium = KobakoTextStyle.copy(fontSize = 15.sp, lineHeight = 19.5.sp, fontWeight = FontWeight.Medium),
+    titleSmall = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp, fontWeight = FontWeight.Medium),
+    bodyLarge = KobakoTextStyle.copy(fontSize = 16.sp, lineHeight = 18.4.sp),
+    bodyMedium = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp),
+    bodySmall = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 17.4.sp),
+    labelLarge = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 20.3.sp),
+    labelMedium = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 15.6.sp),
+    labelSmall = KobakoTextStyle.copy(fontSize = 11.sp, lineHeight = 16.sp),
 )
 
 private val LightScheme = lightColorScheme(primary = LightColors.accent, onPrimary = LightColors.onAccent, background = LightColors.paper, onBackground = LightColors.ink, surface = LightColors.surface, onSurface = LightColors.ink, outline = LightColors.rule)
@@ -95,7 +101,7 @@ fun KobakoTheme(theme: String, content: @Composable () -> Unit) {
         "light" -> false
         else -> isSystemInDarkTheme()
     }
-    CompositionLocalProvider(LocalKobakoColors provides if (dark) DarkColors else LightColors) {
+    CompositionLocalProvider(LocalKobakoColors provides if (dark) DarkColors else LightColors, LocalTextStyle provides KobakoTextStyle) {
         MaterialTheme(colorScheme = if (dark) DarkScheme else LightScheme, typography = KobakoTypography, content = content)
     }
 }

@@ -76,7 +76,7 @@ fun categoryDotIndex(name: String): Int = when (name) {
 fun KobakoColors.categoryColor(name: String): Color = categoryDots[categoryDotIndex(name)]
 val KobakoTextStyle = TextStyle(
     platformStyle = PlatformTextStyle(includeFontPadding = false),
-    lineHeightStyle = LineHeightStyle(alignment = LineHeightStyle.Alignment.Center, trim = LineHeightStyle.Trim.Both),
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None, LineHeightStyle.Mode.Fixed),
 )
 private val KobakoTypography = Typography(
     displaySmall = KobakoTextStyle.copy(fontSize = 30.sp, lineHeight = 35.sp, fontWeight = FontWeight.Medium),

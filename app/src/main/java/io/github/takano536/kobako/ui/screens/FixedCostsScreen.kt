@@ -76,8 +76,8 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
 @Composable
 private fun FixedCostRow(item: FixedCost) {
     val colors = ThemeTokens.colors
-    Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(item.name, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle)
                 Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp, style = KobakoTextStyle)

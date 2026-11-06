@@ -92,8 +92,8 @@ private fun AccountRow(account: BalanceAccount, systemKey: String) {
         "credit_card" -> listOf(-kotlin.math.abs(account.scheduledAmount ?: 0L), account.unbilledAmount ?: 0L)
         else -> listOf(account.balance)
     }
-    Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(account.name, modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp)
             Row(Modifier.fillMaxWidth(0.6f)) {
                 columns.forEach { value ->

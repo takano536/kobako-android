@@ -118,7 +118,7 @@ fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, pr
 fun SummaryPanel(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
     val compact = LocalConfiguration.current.screenHeightDp <= 820
     val ruleColor = ThemeTokens.colors.rule
-    Column(Modifier.fillMaxWidth().drawBehind { drawLine(ruleColor, Offset(0f, size.height - 1.dp.toPx()), Offset(size.width, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx()) }.padding(start = PageHorizontalPadding, top = 16.dp, end = PageHorizontalPadding, bottom = if (compact) 4.dp else 12.dp)) {
+    Column(Modifier.fillMaxWidth().drawBehind { val inset = PageHorizontalPadding.toPx(); drawLine(ruleColor, Offset(inset, size.height - 1.dp.toPx()), Offset(size.width - inset, size.height - 1.dp.toPx()), strokeWidth = 1.dp.toPx()) }.padding(start = PageHorizontalPadding, top = 16.dp, end = PageHorizontalPadding, bottom = if (compact) 4.dp else 12.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom, content = content)
     }
 }

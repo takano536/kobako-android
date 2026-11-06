@@ -97,7 +97,7 @@ private fun AppShell(nav: NavHostController, viewModel: AppViewModel, state: App
             val colors = ThemeTokens.colors
             Column(
                 Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).height(56.dp).background(MaterialTheme.colorScheme.background).drawBehind {
-                    drawLine(colors.rule, Offset(0f, 0f), Offset(size.width, 0f), strokeWidth = 1.dp.toPx())
+                    val stroke = 1.dp.toPx(); drawLine(colors.rule, Offset(0f, stroke / 2f), Offset(size.width, stroke / 2f), strokeWidth = stroke)
                 },
             ) {
                 Row(Modifier.fillMaxWidth().fillMaxHeight()) {

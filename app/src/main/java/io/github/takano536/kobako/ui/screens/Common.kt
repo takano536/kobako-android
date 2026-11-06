@@ -45,7 +45,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -61,10 +60,6 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
-
-/** CSS の line-height をそのまま箱の高さにする（フォント既定の行送りを切る）。 */
-private val CsLineBox = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both, LineHeightStyle.Mode.Fixed)
-
 data class DemoHeaderState(
     val active: Boolean = false,
     val onExit: () -> Unit = {},
@@ -88,7 +83,7 @@ fun PageHeader(title: String, count: Int? = null) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle.copy(lineHeightStyle = CsLineBox))
+            Text(title, fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle)
             count?.let { Text("${it}件", modifier = Modifier.padding(start = 8.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle) }
         }
         if (demo.active) {
@@ -115,7 +110,7 @@ fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
 fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, primary: Boolean = false, signed: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, fontSize = if (primary) 14.sp else 11.sp, lineHeight = if (primary) 20.3.sp else 16.sp, fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal, style = KobakoTextStyle)
-        Text(if (signed) signedYen(value) else yen(value), color = color, style = KobakoTextStyle.copy(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum", lineHeightStyle = CsLineBox))
+        Text(if (signed) signedYen(value) else yen(value), color = color, style = KobakoTextStyle.copy(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"))
 }
 }
 

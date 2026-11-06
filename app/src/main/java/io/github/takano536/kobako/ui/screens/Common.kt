@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -155,16 +156,20 @@ fun CategoryDot(name: String, modifier: Modifier = Modifier, color: Color? = nul
 
 @Composable
 fun CategoryRow(name: String, amount: Long, total: Long) {
-    val share = if (total > 0) amount.toDouble() / total else 0.0
+    val share = if (total > 0) (amount.toFloat() / total.toFloat()).coerceIn(0f, 1f) else 0f
     val shareLabel = categoryShareLabel(amount, total)
-    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.Top) {
             CategoryDot(name)
             Text(name, Modifier.padding(start = 8.dp).weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(yen(amount), fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle.copy(fontFeatureSettings = "tnum"))
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.Top) {
-            Text(shareLabel, Modifier.width(57.dp), textAlign = TextAlign.Start, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
+            Box(Modifier.weight(1f).padding(top = 4.dp).height(2.dp).background(ThemeTokens.colors.bar)) {
+                Box(Modifier.fillMaxWidth(share).fillMaxHeight().background(ThemeTokens.colors.categoryBar))
+            }
+            Spacer(Modifier.width(24.dp))
+            Text(shareLabel, Modifier.width(57.dp).padding(top = 4.dp), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
         }
     }
 }

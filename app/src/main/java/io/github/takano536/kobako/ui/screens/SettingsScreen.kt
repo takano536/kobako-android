@@ -115,10 +115,14 @@ private fun SettingsRow(
 @Composable
 private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
     val choices = listOf("system" to R.string.theme_system, "light" to R.string.theme_light, "dark" to R.string.theme_dark)
-    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding), verticalArrangement = Arrangement.spacedBy(Space.item)) {
-        choices.forEach { (key, label) ->
+    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
+        choices.forEachIndexed { index, (key, label) ->
+            if (index > 0) Spacer(Modifier.height(Space.item))
             ThemeOptionCard(key, stringResource(label), if (key == "system") stringResource(R.string.theme_system_hint) else null, selected == key) { onSelect(key) }
         }
+        // `.settings-section` is a grid with `gap: var(--space-item)`; the notification
+        // row below the cards keeps exactly one 8px gap.
+        Spacer(Modifier.height(Space.item))
     }
 }
 

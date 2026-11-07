@@ -107,10 +107,10 @@ fun PageHeader(title: String, count: Int? = null) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            CsLineBox(24.15.dp, Modifier.weight(1f)) {
-                Text(title, Modifier.fillMaxWidth(), fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle)
+            CsLineBox(24.15.dp) {
+                Text(title, fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle)
             }
-            count?.let { Text("${it}件", modifier = Modifier.padding(start = 8.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle) }
+            count?.let { Text("${it}件", modifier = Modifier.padding(start = 7.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle) }
         }
         if (demo.active) {
             Row(Modifier.clickable(onClick = demo.onExit).padding(start = 8.dp), verticalAlignment = Alignment.CenterVertically) {

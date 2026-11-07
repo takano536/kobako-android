@@ -36,6 +36,7 @@ import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import io.github.takano536.kobako.ui.theme.KobakoTextStyle
 import io.github.takano536.kobako.ui.theme.ListBottomPadding
+import io.github.takano536.kobako.ui.theme.KobakoText
 @Composable
 fun BalancesScreen(viewModel: AppViewModel, nav: NavHostController) {
     val repository = viewModel.repository()

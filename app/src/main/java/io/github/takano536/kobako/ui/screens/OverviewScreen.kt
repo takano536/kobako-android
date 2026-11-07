@@ -38,6 +38,7 @@ import io.github.takano536.kobako.domain.Transaction
 import io.github.takano536.kobako.ui.Routes
 import io.github.takano536.kobako.ui.theme.ListBottomPadding
 import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.theme.KobakoText
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch

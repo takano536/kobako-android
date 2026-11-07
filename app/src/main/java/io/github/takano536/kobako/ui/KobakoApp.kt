@@ -49,6 +49,7 @@ import io.github.takano536.kobako.ui.screens.OverviewScreen
 import io.github.takano536.kobako.ui.screens.SettingsScreen
 import io.github.takano536.kobako.ui.screens.TransactionsScreen
 import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.ui.theme.KobakoText
 
 internal object Routes {
     const val onboarding = "onboarding"

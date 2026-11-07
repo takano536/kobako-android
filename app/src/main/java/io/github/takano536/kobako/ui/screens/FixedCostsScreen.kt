@@ -42,6 +42,7 @@ import io.github.takano536.kobako.domain.scheduleLabel
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import io.github.takano536.kobako.ui.theme.ListBottomPadding
 import io.github.takano536.kobako.ui.theme.KobakoTextStyle
+import io.github.takano536.kobako.ui.theme.KobakoText
 
 private val fixedGroupOptions = listOf("category" to "カテゴリ別", "frequency" to "頻度別", "account" to "資産別", "day" to "日付別", "none" to "なし")
 

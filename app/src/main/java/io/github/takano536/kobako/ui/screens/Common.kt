@@ -111,7 +111,7 @@ fun CsLineBox(height: Dp, modifier: Modifier = Modifier, content: @Composable ()
 @Composable
 fun CsLineBox(style: TextStyle, content: @Composable () -> Unit) {
     val density = LocalDensity.current
-    CsLineBox(with(density) { style.lineHeight.toDp() }, content)
+    CsLineBox(with(density) { style.lineHeight.toDp() }, content = content)
 }
 
 @Composable
@@ -216,11 +216,11 @@ fun CategoryRow(name: String, amount: Long, total: Long) {
             Text(yen(amount), style = KobakoText.body.copy(fontFeatureSettings = "tnum"))
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.Top) {
-            Box(Modifier.weight(1f).padding(top = 4.dp).height(2.dp).background(ThemeTokens.colors.bar)) {
+            Box(Modifier.weight(1f).padding(top = Space.within).height(2.dp).background(ThemeTokens.colors.bar)) {
                 Box(Modifier.fillMaxWidth(share).fillMaxHeight().background(ThemeTokens.colors.categoryBar))
             }
             Spacer(Modifier.width(8.dp))
-            Text(shareLabel, Modifier.width(57.dp).padding(top = 4.dp), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, style = KobakoText.small)
+            Text(shareLabel, Modifier.width(57.dp).padding(top = Space.within), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, style = KobakoText.small)
         }
     }
 }
@@ -233,7 +233,7 @@ fun TransactionGridRow(transaction: Transaction, date: String? = null) {
     val categoryWidth = (config.screenWidthDp * 0.18f).dp.coerceIn(64.dp, 112.dp)
     val transfer = transaction.type == "transfer"
     Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
-        date?.let { Text(it, color = ThemeTokens.colors.muted, style = KobakoText.small, fontWeight = FontWeight.Medium, modifier = Modifier.heightIn(min = 25.dp).padding(top = 4.dp)) }
+        date?.let { Text(it, color = ThemeTokens.colors.muted, style = KobakoText.small, fontWeight = FontWeight.Medium, modifier = Modifier.heightIn(min = 25.dp).padding(top = Space.within)) }
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(transaction.category, color = if (transfer) ThemeTokens.colors.muted else null)
             Text(transaction.category, modifier = Modifier.width(categoryWidth).padding(start = 8.dp), color = if (transfer) ThemeTokens.colors.muted else ThemeTokens.colors.ink, style = KobakoText.body, maxLines = 2, overflow = TextOverflow.Ellipsis)

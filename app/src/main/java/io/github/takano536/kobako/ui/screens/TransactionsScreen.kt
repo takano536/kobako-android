@@ -47,6 +47,7 @@ import io.github.takano536.kobako.domain.Transaction
 import io.github.takano536.kobako.ui.theme.ListBottomPadding
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import io.github.takano536.kobako.ui.theme.KobakoText
+import io.github.takano536.kobako.ui.theme.Space
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -113,5 +114,5 @@ private fun <T> TransactionMenuChip(label: String, options: List<Pair<T?, String
 
 @Composable
 private fun DateHeader(date: LocalDate, spaced: Boolean) {
-    Text(date.format(DateTimeFormatter.ofPattern("M月d日（E）", Locale.JAPANESE)), color = ThemeTokens.colors.muted, style = KobakoText.small, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (spaced) 16.dp else 4.dp).heightIn(min = 25.dp))
+    Text(date.format(DateTimeFormatter.ofPattern("M月d日（E）", Locale.JAPANESE)), color = ThemeTokens.colors.muted, style = KobakoText.small, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (spaced) Space.group else Space.within).heightIn(min = 25.dp))
 }

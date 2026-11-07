@@ -119,6 +119,9 @@ private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
         choices.forEach { (key, label) ->
             ThemeOptionCard(key, stringResource(label), if (key == "system") stringResource(R.string.theme_system_hint) else null, selected == key) { onSelect(key) }
         }
+        // `.settings-section` is a grid with `gap: var(--space-item)`, so the
+        // notification row keeps one 8px gap below the cards.
+        Spacer(Modifier.height(Space.item))
     }
 }
 

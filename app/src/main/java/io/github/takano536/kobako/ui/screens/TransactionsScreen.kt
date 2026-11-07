@@ -68,7 +68,7 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
     val scope = rememberCoroutineScope()
     Box(Modifier.fillMaxSize()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = ListBottomPadding)) {
-            item { PageHeader(stringResource(R.string.nav_transactions), transactions.size) }
+            item { PageHeader(stringResource(R.string.nav_transactions), filtered.size) }
             item { MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) }) }
             item {
                 Column {

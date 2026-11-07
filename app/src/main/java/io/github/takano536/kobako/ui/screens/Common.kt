@@ -3,6 +3,9 @@ import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
 import io.github.takano536.kobako.R
 import io.github.takano536.kobako.ui.theme.categoryColor
 
@@ -75,6 +78,25 @@ fun categoryShareLabel(amount: Long, total: Long): String {
     return if (share > 0 && share < 0.01) "<1%" else "${(share * 100).roundToInt()}%"
 }
 fun signedYen(value: Long): String = when { value < 0 -> "−${yen(value)}"; value > 0 -> "＋${yen(value)}"; else -> yen(value) }
+/** CSS の line box と同じく、箱の高さは line-height、グリフは箱の中央に置く。
+ *  子は高さ無制限で測るので、フォントの行送りが line-height より大きくても切られない。 */
+@Composable
+fun CsLineBox(height: Dp, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    val boxHeight = with(density) { (height * density.fontScale).roundToPx() }
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        val placeables = measurables.map {
+            it.measure(Constraints(maxWidth = constraints.maxWidth, maxHeight = Constraints.Infinity))
+        }
+        val width = (placeables.maxOfOrNull { it.width } ?: 0).coerceAtMost(constraints.maxWidth)
+        layout(width, boxHeight) {
+            placeables.forEach { placeable ->
+                placeable.place((width - placeable.width) / 2, (boxHeight - placeable.height) / 2)
+            }
+        }
+    }
+}
+
 @Composable
 fun PageHeader(title: String, count: Int? = null) {
     val demo = LocalDemoHeaderState.current
@@ -85,7 +107,9 @@ fun PageHeader(title: String, count: Int? = null) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, Modifier.weight(1f), fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle)
+            CsLineBox(24.15.dp, Modifier.weight(1f)) {
+                Text(title, Modifier.fillMaxWidth(), fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle)
+            }
             count?.let { Text("${it}件", modifier = Modifier.padding(start = 8.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle) }
         }
         if (demo.active) {
@@ -112,7 +136,9 @@ fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
 fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, primary: Boolean = false, signed: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, fontSize = if (primary) 14.sp else 11.sp, lineHeight = if (primary) 20.3.sp else 16.sp, fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal, style = KobakoTextStyle)
-        Text(if (signed) signedYen(value) else yen(value), color = color, style = KobakoTextStyle.copy(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"))
+        CsLineBox(if (primary) 29.9.dp else 18.4.dp) {
+            Text(if (signed) signedYen(value) else yen(value), color = color, style = KobakoTextStyle.copy(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"))
+        }
 }
 }
 

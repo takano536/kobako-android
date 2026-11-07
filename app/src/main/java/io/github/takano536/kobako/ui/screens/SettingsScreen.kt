@@ -119,7 +119,6 @@ private fun ThemeChoices(selected: String, onSelect: (String) -> Unit) {
         choices.forEach { (key, label) ->
             ThemeOptionCard(key, stringResource(label), if (key == "system") stringResource(R.string.theme_system_hint) else null, selected == key) { onSelect(key) }
         }
-        Spacer(Modifier.height(Space.item))
     }
 }
 

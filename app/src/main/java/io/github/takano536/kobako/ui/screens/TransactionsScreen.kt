@@ -1,8 +1,11 @@
 package io.github.takano536.kobako.ui.screens
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.rememberLazyListState
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,6 +52,7 @@ import java.time.LocalDate
 import java.util.Locale
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbarHostState: SnackbarHostState) {
     val repository = viewModel.repository()
@@ -72,11 +77,14 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
             item { MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) }) }
             item {
                 Column {
-                    Row(Modifier.fillMaxWidth().height(36.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TransactionMenuChip(types, type, { type = it })
-                        TransactionMenuChip(categories, category, { category = it })
-                        TransactionMenuChip(accounts, account, { account = it })
+                    FlowRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TransactionMenuChip("種別", types, type, { type = it })
+                        TransactionMenuChip("カテゴリ", categories, category, { category = it })
+                        TransactionMenuChip("資産", accounts, account, { account = it })
                         FilterChip("APIのみ", apiOnly, { apiOnly = !apiOnly }, hasCheck = true)
+                        if (type != null || category != null || account != null || apiOnly) {
+                            Text("条件をクリア", modifier = Modifier.clickable { type = null; category = null; account = null; apiOnly = false }.height(36.dp).wrapContentHeight(Alignment.CenterVertically).padding(horizontal = 2.dp), color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
+                        }
                     }
                     Spacer(Modifier.height(8.dp))
                 }
@@ -95,11 +103,12 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
 }
 
 @Composable
-private fun <T> TransactionMenuChip(options: List<Pair<T?, String>>, selected: T?, onSelected: (T?) -> Unit) {
+private fun <T> TransactionMenuChip(label: String, options: List<Pair<T?, String>>, selected: T?, onSelected: (T?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Box(Modifier.height(36.dp)) {
-        FilterChip(options.first { it.first == selected }.second, selected != null, { expanded = true }, hasChevron = true)
-        DropdownMenu(expanded, { expanded = false }) { options.forEach { (value, label) -> DropdownMenuItem({ Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) }, { onSelected(value); expanded = false }) } }
+    Box {
+        val value = options.firstOrNull { it.first == selected }?.second
+        FilterChip(label, selected != null, { expanded = true }, value = value.takeIf { selected != null }, hasChevron = true)
+        DropdownMenu(expanded, { expanded = false }) { options.forEach { (value, text) -> DropdownMenuItem({ Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis) }, { onSelected(value); expanded = false }) } }
     }
 }
 

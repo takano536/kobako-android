@@ -233,13 +233,32 @@ fun RecentTransactionRow(date: String, category: String, account: String, memo: 
 
 
 @Composable
-fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit, hasChevron: Boolean = false, hasCheck: Boolean = false) {
+fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit, value: String? = null, hasChevron: Boolean = false, hasCheck: Boolean = false) {
+    val colors = ThemeTokens.colors
+    val content = if (selected) colors.accentStrong else colors.muted
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-        Box(Modifier.height(36.dp).border(1.dp, if (selected) ThemeTokens.colors.accent.copy(alpha = 0.22f) else ThemeTokens.colors.rule, RoundedCornerShape(6.dp)).background(if (selected) ThemeTokens.colors.chipSelected else Color.Transparent, RoundedCornerShape(6.dp)).pointerInput(onClick) { detectTapGestures(onTap = { onClick() }) }.padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (hasCheck) Text("✓", color = if (selected) ThemeTokens.colors.accentStrong else ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
-                Text(label, color = if (selected) ThemeTokens.colors.accentStrong else ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
-                if (hasChevron) Icon(painterResource(R.drawable.ic_action_chevron_down), null, modifier = Modifier.size(10.dp), tint = if (selected) ThemeTokens.colors.accentStrong else ThemeTokens.colors.muted)
+        Row(
+            Modifier
+                .height(36.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .border(1.dp, if (selected) colors.accent.copy(alpha = 0.22f) else colors.rule, RoundedCornerShape(6.dp))
+                .background(if (selected) colors.chipSelected else Color.Transparent)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (hasCheck) {
+                Icon(painterResource(R.drawable.ic_check), null, Modifier.size(12.dp), tint = if (selected) content else colors.muted.copy(alpha = 0.28f))
+                Spacer(Modifier.width(8.dp))
+            }
+            Text(label, color = content, fontSize = 12.sp, lineHeight = 12.sp, maxLines = 1, style = KobakoTextStyle)
+            if (value != null) {
+                Spacer(Modifier.width(8.dp))
+                Text(value, color = if (selected) content else colors.ink, fontSize = 14.sp, lineHeight = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Medium, style = KobakoTextStyle)
+            }
+            if (hasChevron) {
+                Spacer(Modifier.width(8.dp))
+                Icon(painterResource(R.drawable.ic_action_chevron_down), null, Modifier.size(10.dp), tint = content.copy(alpha = 0.8f))
             }
         }
     }

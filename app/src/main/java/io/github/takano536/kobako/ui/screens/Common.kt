@@ -38,6 +38,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,8 +67,22 @@ import kotlin.math.roundToInt
 /** CSS の line-height を箱の高さにし、グリフを行ボックスの中央に置く（Web と同じ見え方）。 */
 @Composable
 fun CsLineBox(height: Dp, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val scale = LocalDensity.current.fontScale
-    Box(modifier.height(height * scale), contentAlignment = Alignment.Center) { content() }
+    // CSS の line box と同じく、箱の高さは line-height、グリフは箱の中央に置く。
+    // 子は高さ無制限で測るので、フォントの行送りが line-height より大きくても切られない
+    // （はみ出した分は CSS の negative leading と同じく箱の外に描かれる）。
+    val density = LocalDensity.current
+    val boxHeight = with(density) { (height * density.fontScale).roundToPx() }
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        val placeables = measurables.map {
+            it.measure(Constraints(maxWidth = constraints.maxWidth, maxHeight = Constraints.Infinity))
+        }
+        val width = (placeables.maxOfOrNull { it.width } ?: 0).coerceAtMost(constraints.maxWidth)
+        layout(width, boxHeight) {
+            placeables.forEach { placeable ->
+                placeable.place((width - placeable.width) / 2, (boxHeight - placeable.height) / 2)
+            }
+        }
+    }
 }
 
 data class DemoHeaderState(

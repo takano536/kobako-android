@@ -60,7 +60,6 @@ private fun groupKeyOf(item: FixedCost, group: String): String = when (group) {
     else -> item.categoryName ?: "未分類"
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
     val repository = viewModel.repository()
@@ -104,23 +103,13 @@ fun FixedCostsScreen(viewModel: AppViewModel, nav: NavHostController) {
                     }
                 }
                 item {
-                    FlowRow(
-                        Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
+                    FilterBar {
                         FixedCostMenuChip("並び順", fixedGroupOptions, group, { group = it })
                         FixedCostMenuChip("カテゴリ", categories.map { it to it }, category, { category = it })
                         FixedCostMenuChip("頻度", frequencies.map { it to frequencyLabel(it) }, frequency, { frequency = it })
                         FixedCostMenuChip("資産", accounts.map { it to it }, account, { account = it })
                         if (category != null || frequency != null || account != null) {
-                            Text(
-                                "条件をクリア",
-                                modifier = Modifier.clickable { category = null; frequency = null; account = null }.height(36.dp).wrapContentHeight(Alignment.CenterVertically).padding(horizontal = 2.dp),
-                                color = ThemeTokens.colors.muted,
-                                fontSize = 12.sp,
-                                lineHeight = 17.4.sp,
-                            )
+                            FilterClear { category = null; frequency = null; account = null }
                         }
                     }
                 }
@@ -150,8 +139,8 @@ private fun GroupHeading(name: String, first: Boolean) {
         Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (first) 8.dp else 20.dp, bottom = 4.dp).heightIn(min = 20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(name, color = colors.muted, fontSize = 12.sp, lineHeight = 15.6.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text("金額", color = colors.muted, fontSize = 11.sp, lineHeight = 16.sp)
+        Text(name, color = colors.muted, style = KobakoText.meta, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text("金額", color = colors.muted, style = KobakoText.micro)
     }
 }
 
@@ -175,10 +164,10 @@ private fun FixedCostRow(item: FixedCost) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(item.name, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle)
-                Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp, style = KobakoTextStyle)
+                Text(item.name, style = KobakoText.body)
+                Text("${item.accountName}・${item.scheduleLabel()}", color = colors.muted, style = KobakoText.small)
             }
-            Text(yen(item.amount), color = colors.moneyNegative, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle.copy(fontFeatureSettings = "tnum"))
+            Text(yen(item.amount), color = colors.moneyNegative, style = KobakoText.body.copy(fontFeatureSettings = "tnum"))
         }
         HorizontalDivider(color = colors.rule, thickness = 1.dp)
     }

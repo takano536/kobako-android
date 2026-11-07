@@ -76,17 +76,14 @@ fun TransactionsScreen(viewModel: AppViewModel, nav: NavHostController, snackbar
             item { PageHeader(stringResource(R.string.nav_transactions), filtered.size) }
             item { MonthSelector(month, { viewModel.moveMonth(-1) }, { viewModel.moveMonth(1) }) }
             item {
-                Column {
-                    FlowRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TransactionMenuChip("種別", types, type, { type = it })
-                        TransactionMenuChip("カテゴリ", categories, category, { category = it })
-                        TransactionMenuChip("資産", accounts, account, { account = it })
-                        FilterChip("APIのみ", apiOnly, { apiOnly = !apiOnly }, hasCheck = true)
-                        if (type != null || category != null || account != null || apiOnly) {
-                            Text("条件をクリア", modifier = Modifier.clickable { type = null; category = null; account = null; apiOnly = false }.height(36.dp).wrapContentHeight(Alignment.CenterVertically).padding(horizontal = 2.dp), color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
-                        }
+                FilterBar {
+                    TransactionMenuChip("種別", types, type, { type = it })
+                    TransactionMenuChip("カテゴリ", categories, category, { category = it })
+                    TransactionMenuChip("資産", accounts, account, { account = it })
+                    FilterChip("APIのみ", apiOnly, { apiOnly = !apiOnly }, hasCheck = true)
+                    if (type != null || category != null || account != null || apiOnly) {
+                        FilterClear { type = null; category = null; account = null; apiOnly = false }
                     }
-                    Spacer(Modifier.height(8.dp))
                 }
             }
             when {
@@ -115,5 +112,5 @@ private fun <T> TransactionMenuChip(label: String, options: List<Pair<T?, String
 
 @Composable
 private fun DateHeader(date: LocalDate, spaced: Boolean) {
-    Text(date.format(DateTimeFormatter.ofPattern("M月d日（E）", Locale.JAPANESE)), color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (spaced) 16.dp else 4.dp).heightIn(min = 25.dp))
+    Text(date.format(DateTimeFormatter.ofPattern("M月d日（E）", Locale.JAPANESE)), color = ThemeTokens.colors.muted, style = KobakoText.small, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (spaced) 16.dp else 4.dp).heightIn(min = 25.dp))
 }

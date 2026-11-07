@@ -113,7 +113,7 @@ private fun AppShell(nav: NavHostController, viewModel: AppViewModel, state: App
                             verticalArrangement = Arrangement.Center,
                         ) {
                             Icon(painterResource(item.icon), contentDescription = label, tint = tint, modifier = Modifier.size(20.dp))
-                            Text(label, color = tint, fontSize = 12.sp, lineHeight = 17.4.sp, fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal, maxLines = 1)
+                            Text(label, color = tint, style = KobakoText.small, fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal, maxLines = 1)
                         }
                     }
                 }

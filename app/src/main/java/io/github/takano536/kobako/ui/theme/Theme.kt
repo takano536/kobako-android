@@ -78,17 +78,74 @@ val KobakoTextStyle = TextStyle(
     platformStyle = PlatformTextStyle(includeFontPadding = false),
     lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None, LineHeightStyle.Mode.Fixed),
 )
+/**
+ * The CSS `--text-*` / `--leading-*` pairs, one entry per role. Screens pick a role
+ * instead of writing font sizes and line heights inline, so a heading and a chip
+ * cannot drift apart. `leading-none` (1.0) is deliberately absent: Compose clamps
+ * a line box below the font's natural leading, so it would not reproduce the CSS.
+ */
+object KobakoText {
+    /** h1 — `--text-title` / `--leading-tight` */
+    val title = KobakoTextStyle.copy(fontSize = 21.sp, lineHeight = 24.15.sp, fontWeight = FontWeight.Medium)
+    /** h2 — `--text-heading` / `--leading-heading` */
+    val heading = KobakoTextStyle.copy(fontSize = 15.sp, lineHeight = 19.5.sp, fontWeight = FontWeight.Medium)
+    /** body text and list rows — `--text-body` / `--leading-body` */
+    val body = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp)
+    /** small labels, dates, hints — `--text-small` / `--leading-meta` */
+    val small = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 17.4.sp)
+    /** smallest text — `--text-micro` / `--leading-meta` */
+    val micro = KobakoTextStyle.copy(fontSize = 11.sp, lineHeight = 16.sp)
+    /** group and column headings — `--text-small` / `--leading-heading` */
+    val meta = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 15.6.sp, fontWeight = FontWeight.Medium)
+    /** inline label at body size — `--text-body` / `--leading-meta` */
+    val label = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 20.3.sp)
+    /** summary amount — `--text-display` / `--leading-tight` */
+    val amountLarge = KobakoTextStyle.copy(fontSize = 26.sp, lineHeight = 29.9.sp, fontWeight = FontWeight.Medium)
+    /** secondary summary amount — `--text-label` / `--leading-tight` */
+    val amountMedium = KobakoTextStyle.copy(fontSize = 16.sp, lineHeight = 18.4.sp)
+    /** tabular figures, for columns of numbers */
+    val tabular = KobakoTextStyle.copy(fontFeatureSettings = "tnum")
+}
+
+/** The CSS spacing scale (`--space-*`). */
+object Space {
+    val within = 4.dp
+    val item = 8.dp
+    val related = 12.dp
+    val group = 16.dp
+    val section = 32.dp
+}
+
+/** The CSS radius and stroke scale (`--radius-*`, `--stroke-*`). */
+object Radius {
+    val sm = 6.dp
+    val md = 8.dp
+}
+
+object Stroke {
+    val hairline = 1.dp
+    val medium = 1.5.dp
+}
+
+/** Control sizes that repeat across screens. */
+object KobakoSize {
+    /** `.chip` — 36px tall, shared by every filter row. */
+    val chip = 36.dp
+    /** `.settings-row` / `.theme-option` — 44px minimum. */
+    val row = 44.dp
+}
+
 private val KobakoTypography = Typography(
-    displaySmall = KobakoTextStyle.copy(fontSize = 30.sp, lineHeight = 35.sp, fontWeight = FontWeight.Medium),
-    titleLarge = KobakoTextStyle.copy(fontSize = 21.sp, lineHeight = 24.15.sp, fontWeight = FontWeight.Medium),
-    titleMedium = KobakoTextStyle.copy(fontSize = 15.sp, lineHeight = 19.5.sp, fontWeight = FontWeight.Medium),
-    titleSmall = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp, fontWeight = FontWeight.Medium),
-    bodyLarge = KobakoTextStyle.copy(fontSize = 16.sp, lineHeight = 18.4.sp),
-    bodyMedium = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp),
-    bodySmall = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 17.4.sp),
-    labelLarge = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 20.3.sp),
-    labelMedium = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 15.6.sp),
-    labelSmall = KobakoTextStyle.copy(fontSize = 11.sp, lineHeight = 16.sp),
+    displaySmall = KobakoText.amountLarge,
+    titleLarge = KobakoText.title,
+    titleMedium = KobakoText.heading,
+    titleSmall = KobakoText.body.copy(fontWeight = FontWeight.Medium),
+    bodyLarge = KobakoText.amountMedium,
+    bodyMedium = KobakoText.body,
+    bodySmall = KobakoText.small,
+    labelLarge = KobakoText.label,
+    labelMedium = KobakoText.meta,
+    labelSmall = KobakoText.micro,
 )
 
 private val LightScheme = lightColorScheme(primary = LightColors.accent, onPrimary = LightColors.onAccent, background = LightColors.paper, onBackground = LightColors.ink, surface = LightColors.surface, onSurface = LightColors.ink, outline = LightColors.rule)

@@ -77,10 +77,10 @@ private fun BalanceHeading(group: BalanceGroup) {
         else -> listOf(stringResource(R.string.balance))
     }
     Column(Modifier.fillMaxWidth().padding(top = 29.dp)) {
-        Text(group.name, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 15.6.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
+        Text(group.name, color = ThemeTokens.colors.muted, style = KobakoText.meta, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp))
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-            Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 15.6.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
+            Row(Modifier.fillMaxWidth(0.6f)) { columns.forEach { Text(it, color = ThemeTokens.colors.muted, style = KobakoText.meta, modifier = Modifier.weight(1f), textAlign = TextAlign.End) } }
         }
     }
 }
@@ -94,11 +94,11 @@ private fun AccountRow(account: BalanceAccount, systemKey: String) {
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(account.name, modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp)
+            Text(account.name, modifier = Modifier.weight(1f), style = KobakoText.body)
             Row(Modifier.fillMaxWidth(0.6f)) {
                 columns.forEach { value ->
                     val color = if (value == 0L) ThemeTokens.colors.ink else if (value > 0) ThemeTokens.colors.moneyPositive else ThemeTokens.colors.moneyNegative
-                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = color, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle.copy(fontFeatureSettings = "tnum"))
+                    Text(if (value < 0) signedYen(value) else yen(value), modifier = Modifier.weight(1f), textAlign = TextAlign.End, color = color, style = KobakoText.body.copy(fontFeatureSettings = "tnum"))
                 }
             }
         }

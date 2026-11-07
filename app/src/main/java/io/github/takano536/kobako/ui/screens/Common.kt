@@ -22,12 +22,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +62,11 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.platform.LocalConfiguration
 import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
 import io.github.takano536.kobako.ui.theme.KobakoTextStyle
+import io.github.takano536.kobako.ui.theme.KobakoText
+import io.github.takano536.kobako.ui.theme.KobakoSize
+import io.github.takano536.kobako.ui.theme.Radius
+import io.github.takano536.kobako.ui.theme.Space
+import io.github.takano536.kobako.ui.theme.Stroke
 import io.github.takano536.kobako.ui.theme.ThemeTokens
 import io.github.takano536.kobako.domain.Transaction
 import java.text.NumberFormat
@@ -97,6 +107,13 @@ fun CsLineBox(height: Dp, modifier: Modifier = Modifier, content: @Composable ()
     }
 }
 
+/** Same box, sized from a text token's CSS line-height. */
+@Composable
+fun CsLineBox(style: TextStyle, content: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    CsLineBox(with(density) { style.lineHeight.toDp() }, content)
+}
+
 @Composable
 fun PageHeader(title: String, count: Int? = null) {
     val demo = LocalDemoHeaderState.current
@@ -107,16 +124,16 @@ fun PageHeader(title: String, count: Int? = null) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            CsLineBox(24.15.dp) {
-                Text(title, fontSize = 21.sp, lineHeight = 24.15.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, style = KobakoTextStyle)
+            CsLineBox(KobakoText.title) {
+                Text(title, style = KobakoText.title, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            count?.let { Text("${it}件", modifier = Modifier.padding(start = 7.dp), color = ThemeTokens.colors.muted, fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle) }
+            count?.let { Text("${it}件", modifier = Modifier.padding(start = 7.dp), color = ThemeTokens.colors.muted, style = KobakoText.body) }
         }
         if (demo.active) {
             Row(Modifier.clickable(onClick = demo.onExit).padding(start = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("デモ", color = ThemeTokens.colors.muted, fontSize = 11.sp, lineHeight = 16.sp)
+                Text("デモ", color = ThemeTokens.colors.muted, style = KobakoText.micro)
                 Spacer(Modifier.width(8.dp))
-                Text("終了", color = ThemeTokens.colors.accent, fontSize = 12.sp, lineHeight = 17.4.sp)
+                Text("終了", color = ThemeTokens.colors.accent, style = KobakoText.small)
             }
         }
     }
@@ -124,20 +141,26 @@ fun PageHeader(title: String, count: Int? = null) {
 
 @Composable
 fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = 32.dp).heightIn(min = 44.dp)) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(title, fontSize = 15.sp, lineHeight = 19.5.sp, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink)
-            trailing?.let { CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) { it() } }
-        }
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = Space.section).heightIn(min = KobakoSize.row),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(title, style = KobakoText.heading, color = ThemeTokens.colors.ink)
+        trailing?.let { CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) { it() } }
     }
 }
 
 @Composable
 fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, primary: Boolean = false, signed: Boolean = false) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, fontSize = if (primary) 14.sp else 11.sp, lineHeight = if (primary) 20.3.sp else 16.sp, fontWeight = if (primary) FontWeight.Medium else FontWeight.Normal, style = KobakoTextStyle)
-        CsLineBox(if (primary) 29.9.dp else 18.4.dp) {
-            Text(if (signed) signedYen(value) else yen(value), color = color, style = KobakoTextStyle.copy(fontSize = if (primary) 26.sp else 16.sp, lineHeight = if (primary) 29.9.sp else 18.4.sp, letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"))
+    Column(verticalArrangement = Arrangement.spacedBy(Space.within)) {
+        Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, style = if (primary) KobakoText.label.copy(fontWeight = FontWeight.Medium) else KobakoText.micro.copy(fontWeight = FontWeight.Normal))
+        CsLineBox(if (primary) KobakoText.amountLarge else KobakoText.amountMedium) {
+            Text(
+                if (signed) signedYen(value) else yen(value),
+                color = color,
+                style = (if (primary) KobakoText.amountLarge else KobakoText.amountMedium).copy(letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+            )
         }
 }
 }
@@ -160,7 +183,7 @@ fun MonthSelector(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
                 Icon(painterResource(R.drawable.ic_action_chevron_left), stringResource(R.string.previous_month), tint = ThemeTokens.colors.muted, modifier = Modifier.size(16.dp))
             }
         }
-        Text(month.format(DateTimeFormatter.ofPattern("yyyy年M月")), modifier = Modifier.widthIn(min = 44.dp), textAlign = TextAlign.Center, fontSize = 12.sp, lineHeight = 17.4.sp, letterSpacing = (-0.25).sp, color = ThemeTokens.colors.ink, maxLines = 1)
+        Text(month.format(DateTimeFormatter.ofPattern("yyyy年M月")), modifier = Modifier.widthIn(min = 44.dp), textAlign = TextAlign.Center, style = KobakoText.small, letterSpacing = (-0.25).sp, color = ThemeTokens.colors.ink, maxLines = 1)
         Box(Modifier.size(44.dp).clickable(onClick = onNext)) {
             Box(Modifier.fillMaxSize().padding(start = 6.dp), contentAlignment = Alignment.Center) {
                 Icon(painterResource(R.drawable.ic_action_chevron_right), stringResource(R.string.next_month), tint = ThemeTokens.colors.muted, modifier = Modifier.size(16.dp))
@@ -169,7 +192,7 @@ fun MonthSelector(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
     }
 }
  
-@Composable fun EmptyMessage(message: String) { Text(message, color = ThemeTokens.colors.muted, modifier = Modifier.padding(horizontal = PageHorizontalPadding, vertical = 24.dp), fontSize = 14.sp, lineHeight = 22.4.sp) }
+@Composable fun EmptyMessage(message: String) { Text(message, color = ThemeTokens.colors.muted, modifier = Modifier.padding(horizontal = PageHorizontalPadding, vertical = 24.dp), style = KobakoText.body) }
 
 
 @Composable
@@ -189,15 +212,15 @@ fun CategoryRow(name: String, amount: Long, total: Long) {
     Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.Top) {
             Box(Modifier.height(22.4.dp), contentAlignment = Alignment.Center) { CategoryDot(name) }
-            Text(name, Modifier.padding(start = 8.dp).weight(1f), fontSize = 14.sp, lineHeight = 22.4.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(yen(amount), fontSize = 14.sp, lineHeight = 22.4.sp, style = KobakoTextStyle.copy(fontFeatureSettings = "tnum"))
+            Text(name, Modifier.padding(start = 8.dp).weight(1f), style = KobakoText.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(yen(amount), style = KobakoText.body.copy(fontFeatureSettings = "tnum"))
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.Top) {
             Box(Modifier.weight(1f).padding(top = 4.dp).height(2.dp).background(ThemeTokens.colors.bar)) {
                 Box(Modifier.fillMaxWidth(share).fillMaxHeight().background(ThemeTokens.colors.categoryBar))
             }
             Spacer(Modifier.width(8.dp))
-            Text(shareLabel, Modifier.width(57.dp).padding(top = 4.dp), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp)
+            Text(shareLabel, Modifier.width(57.dp).padding(top = 4.dp), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, style = KobakoText.small)
         }
     }
 }
@@ -210,18 +233,18 @@ fun TransactionGridRow(transaction: Transaction, date: String? = null) {
     val categoryWidth = (config.screenWidthDp * 0.18f).dp.coerceIn(64.dp, 112.dp)
     val transfer = transaction.type == "transfer"
     Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
-        date?.let { Text(it, color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp, fontWeight = FontWeight.Medium, modifier = Modifier.heightIn(min = 25.dp).padding(top = 4.dp)) }
+        date?.let { Text(it, color = ThemeTokens.colors.muted, style = KobakoText.small, fontWeight = FontWeight.Medium, modifier = Modifier.heightIn(min = 25.dp).padding(top = 4.dp)) }
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             CategoryDot(transaction.category, color = if (transfer) ThemeTokens.colors.muted else null)
-            Text(transaction.category, modifier = Modifier.width(categoryWidth).padding(start = 8.dp), color = if (transfer) ThemeTokens.colors.muted else ThemeTokens.colors.ink, fontSize = 14.sp, lineHeight = 22.4.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(transaction.category, modifier = Modifier.width(categoryWidth).padding(start = 8.dp), color = if (transfer) ThemeTokens.colors.muted else ThemeTokens.colors.ink, style = KobakoText.body, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Column(Modifier.weight(1f).padding(start = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(transaction.account, fontSize = 14.sp, lineHeight = 22.4.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(transaction.account, style = KobakoText.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(transaction.memo.orEmpty(), modifier = Modifier.weight(1f, fill = false), color = ThemeTokens.colors.muted, fontSize = 12.sp, lineHeight = 17.4.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    if (transaction.origin == "api") Text("API", Modifier.padding(start = 6.dp).background(ThemeTokens.colors.surfaceHover, RoundedCornerShape(50)).padding(horizontal = 5.dp, vertical = 1.dp), color = ThemeTokens.colors.accentStrong, fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(transaction.memo.orEmpty(), modifier = Modifier.weight(1f, fill = false), color = ThemeTokens.colors.muted, style = KobakoText.small, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    if (transaction.origin == "api") Text("API", Modifier.padding(start = 6.dp).background(ThemeTokens.colors.surfaceHover, RoundedCornerShape(50)).padding(horizontal = 5.dp, vertical = 1.dp), color = ThemeTokens.colors.accentStrong, style = KobakoText.micro, fontWeight = FontWeight.Bold)
                 }
             }
-            Text(if (transaction.type == "transfer") yen(transaction.amount) else signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp, fontFeatureSettings = "tnum"), textAlign = TextAlign.End)
+            Text(if (transaction.type == "transfer") yen(transaction.amount) else signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = KobakoText.body.copy(fontFeatureSettings = "tnum"), textAlign = TextAlign.End)
         }
     }
 }
@@ -239,27 +262,53 @@ fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit, value: Str
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
         Row(
             Modifier
-                .height(36.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .border(1.dp, if (selected) colors.accent.copy(alpha = 0.22f) else colors.rule, RoundedCornerShape(6.dp))
+                .height(KobakoSize.chip)
+                .clip(RoundedCornerShape(Radius.sm))
+                .border(Stroke.hairline, if (selected) colors.accent.copy(alpha = 0.22f) else colors.rule, RoundedCornerShape(Radius.sm))
                 .background(if (selected) colors.chipSelected else Color.Transparent)
                 .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = Space.related),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (hasCheck) {
                 Icon(painterResource(R.drawable.ic_check), null, Modifier.size(12.dp), tint = if (selected) content else colors.muted.copy(alpha = 0.28f))
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(Space.item))
             }
-            Text(label, color = content, fontSize = 12.sp, lineHeight = 12.sp, maxLines = 1, style = KobakoTextStyle)
+            Text(label, color = content, style = KobakoText.small, maxLines = 1)
             if (value != null) {
-                Spacer(Modifier.width(8.dp))
-                Text(value, color = if (selected) content else colors.ink, fontSize = 14.sp, lineHeight = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Medium, style = KobakoTextStyle)
+                Spacer(Modifier.width(Space.item))
+                Text(value, color = if (selected) content else colors.ink, style = KobakoText.body, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Medium)
             }
             if (hasChevron) {
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(Space.item))
                 Icon(painterResource(R.drawable.ic_action_chevron_down), null, Modifier.size(10.dp), tint = content.copy(alpha = 0.8f))
             }
         }
     }
+}
+
+/**
+ * A `.filters` row: the same 16px page inset, 8px gaps and 16px/8px vertical
+ * padding on every screen, so the two filter rows cannot drift apart.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun FilterBar(content: @Composable FlowRowScope.() -> Unit) {
+    FlowRow(
+        Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = Space.group, bottom = Space.item),
+        horizontalArrangement = Arrangement.spacedBy(Space.item),
+        verticalArrangement = Arrangement.spacedBy(Space.item),
+        content = content,
+    )
+}
+
+/** `.filters .clear` — a text button that clears every active filter. */
+@Composable
+fun FilterClear(onClick: () -> Unit) {
+    Text(
+        "条件をクリア",
+        modifier = Modifier.clickable(onClick = onClick).height(KobakoSize.chip).wrapContentHeight(Alignment.CenterVertically).padding(horizontal = 2.dp),
+        color = ThemeTokens.colors.muted,
+        style = KobakoText.small,
+    )
 }

@@ -1,0 +1,314 @@
+package io.github.takano536.kobako.ui.screens
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
+import io.github.takano536.kobako.R
+import io.github.takano536.kobako.ui.theme.categoryColor
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.platform.LocalConfiguration
+import io.github.takano536.kobako.ui.theme.PageHorizontalPadding
+import io.github.takano536.kobako.ui.theme.KobakoTextStyle
+import io.github.takano536.kobako.ui.theme.KobakoText
+import io.github.takano536.kobako.ui.theme.KobakoSize
+import io.github.takano536.kobako.ui.theme.Radius
+import io.github.takano536.kobako.ui.theme.Space
+import io.github.takano536.kobako.ui.theme.Stroke
+import io.github.takano536.kobako.ui.theme.ThemeTokens
+import io.github.takano536.kobako.domain.Transaction
+import java.text.NumberFormat
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.math.roundToInt
+
+data class DemoHeaderState(
+    val active: Boolean = false,
+    val onExit: () -> Unit = {},
+)
+
+val LocalDemoHeaderState = staticCompositionLocalOf { DemoHeaderState() }
+
+fun yen(value: Long): String = NumberFormat.getNumberInstance(Locale.JAPAN).format(kotlin.math.abs(value)) + "円"
+fun categoryShareLabel(amount: Long, total: Long): String {
+    val share = if (total > 0) amount.toDouble() / total else 0.0
+    return if (share > 0 && share < 0.01) "<1%" else "${(share * 100).roundToInt()}%"
+}
+fun signedYen(value: Long): String = when { value < 0 -> "−${yen(value)}"; value > 0 -> "＋${yen(value)}"; else -> yen(value) }
+/** CSS の line box と同じく、箱の高さは line-height、グリフは箱の中央に置く。
+ *  子は高さ無制限で測るので、フォントの行送りが line-height より大きくても切られない。 */
+@Composable
+fun CsLineBox(height: Dp, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    val boxHeight = with(density) { (height * density.fontScale).roundToPx() }
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        val placeables = measurables.map {
+            it.measure(Constraints(maxWidth = constraints.maxWidth, maxHeight = Constraints.Infinity))
+        }
+        val width = (placeables.maxOfOrNull { it.width } ?: 0).coerceAtMost(constraints.maxWidth)
+        layout(width, boxHeight) {
+            placeables.forEach { placeable ->
+                placeable.place((width - placeable.width) / 2, (boxHeight - placeable.height) / 2)
+            }
+        }
+    }
+}
+
+/** Same box, sized from a text token's CSS line-height. */
+@Composable
+fun CsLineBox(style: TextStyle, content: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    CsLineBox(with(density) { style.lineHeight.toDp() }, content = content)
+}
+
+@Composable
+fun PageHeader(title: String, count: Int? = null) {
+    val demo = LocalDemoHeaderState.current
+    val compact = LocalConfiguration.current.screenHeightDp <= 820
+    val verticalPadding = if (compact) 14.dp else 16.dp
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding, vertical = verticalPadding),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            CsLineBox(KobakoText.title) {
+                Text(title, style = KobakoText.title, letterSpacing = (-0.03).em, fontWeight = FontWeight.Medium, color = ThemeTokens.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            count?.let { Text("${it}件", modifier = Modifier.padding(start = 7.dp), color = ThemeTokens.colors.muted, style = KobakoText.body) }
+        }
+        if (demo.active) {
+            Row(Modifier.clickable(onClick = demo.onExit).padding(start = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("デモ", color = ThemeTokens.colors.muted, style = KobakoText.micro)
+                Spacer(Modifier.width(8.dp))
+                Text("終了", color = ThemeTokens.colors.accent, style = KobakoText.small)
+            }
+        }
+    }
+}
+
+@Composable
+fun SectionTitle(title: String, trailing: (@Composable () -> Unit)? = null) {
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = Space.section).heightIn(min = KobakoSize.row),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(title, style = KobakoText.heading, color = ThemeTokens.colors.ink)
+        trailing?.let { CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) { it() } }
+    }
+}
+
+@Composable
+fun Metric(label: String, value: Long, color: Color = ThemeTokens.colors.ink, primary: Boolean = false, signed: Boolean = false) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.within)) {
+        Text(label, color = if (primary) ThemeTokens.colors.ink else ThemeTokens.colors.muted, style = if (primary) KobakoText.label.copy(fontWeight = FontWeight.Medium) else KobakoText.micro.copy(fontWeight = FontWeight.Normal))
+        CsLineBox(if (primary) KobakoText.amountLarge else KobakoText.amountMedium) {
+            Text(
+                if (signed) signedYen(value) else yen(value),
+                color = color,
+                style = (if (primary) KobakoText.amountLarge else KobakoText.amountMedium).copy(letterSpacing = if (primary) (-0.04).sp else 0.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+            )
+        }
+}
+}
+
+@Composable
+fun SummaryPanel(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+    val compact = LocalConfiguration.current.screenHeightDp <= 820
+    val ruleColor = ThemeTokens.colors.rule
+    Column(Modifier.fillMaxWidth().drawBehind { val inset = PageHorizontalPadding.toPx(); val stroke = 1.dp.toPx(); val y = size.height - stroke / 2f; drawLine(ruleColor, Offset(inset, y), Offset(size.width - inset, y), strokeWidth = stroke) }.padding(start = PageHorizontalPadding, top = 16.dp, end = PageHorizontalPadding, bottom = if (compact) 4.dp else 12.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom, content = content)
+    }
+}
+
+@Composable
+fun MonthSelector(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
+    val compact = LocalConfiguration.current.screenHeightDp <= 820
+    Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(start = 7.dp, bottom = if (compact) 4.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(44.dp).clickable(onClick = onPrev)) {
+            Box(Modifier.fillMaxSize().padding(end = 6.dp), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_action_chevron_left), stringResource(R.string.previous_month), tint = ThemeTokens.colors.muted, modifier = Modifier.size(16.dp))
+            }
+        }
+        Text(month.format(DateTimeFormatter.ofPattern("yyyy年M月")), modifier = Modifier.widthIn(min = 44.dp), textAlign = TextAlign.Center, style = KobakoText.small, letterSpacing = (-0.25).sp, color = ThemeTokens.colors.ink, maxLines = 1)
+        Box(Modifier.size(44.dp).clickable(onClick = onNext)) {
+            Box(Modifier.fillMaxSize().padding(start = 6.dp), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_action_chevron_right), stringResource(R.string.next_month), tint = ThemeTokens.colors.muted, modifier = Modifier.size(16.dp))
+            }
+        }
+    }
+}
+ 
+@Composable fun EmptyMessage(message: String) { Text(message, color = ThemeTokens.colors.muted, modifier = Modifier.padding(horizontal = PageHorizontalPadding, vertical = 24.dp), style = KobakoText.body) }
+
+
+@Composable
+fun ReadOnlyFab(visible: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    AnimatedVisibility(visible, modifier = modifier.padding(end = PageHorizontalPadding, bottom = 16.dp), enter = fadeIn() + slideInVertically { it }, exit = fadeOut() + slideOutVertically { it }) {
+        IconButton(onClick, Modifier.size(56.dp).clip(CircleShape).background(ThemeTokens.colors.buttonPrimary)) { Icon(painterResource(R.drawable.ic_action_add), stringResource(R.string.register_transaction), tint = ThemeTokens.colors.onAccent) }
+    }
+}
+
+@Composable
+fun CategoryDot(name: String, modifier: Modifier = Modifier, color: Color? = null) { Box(Modifier.then(modifier).size(6.dp).clip(CircleShape).background(color ?: ThemeTokens.colors.categoryColor(name))) }
+
+@Composable
+fun CategoryRow(name: String, amount: Long, total: Long) {
+    val share = if (total > 0) (amount.toFloat() / total.toFloat()).coerceIn(0f, 1f) else 0f
+    val shareLabel = categoryShareLabel(amount, total)
+    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.Top) {
+            Box(Modifier.height(22.4.dp), contentAlignment = Alignment.Center) { CategoryDot(name) }
+            Text(name, Modifier.padding(start = 8.dp).weight(1f), style = KobakoText.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(yen(amount), style = KobakoText.body.copy(fontFeatureSettings = "tnum"))
+        }
+        Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.Top) {
+            Box(Modifier.weight(1f).padding(top = Space.within).height(2.dp).background(ThemeTokens.colors.bar)) {
+                Box(Modifier.fillMaxWidth(share).fillMaxHeight().background(ThemeTokens.colors.categoryBar))
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(shareLabel, Modifier.width(57.dp).padding(top = Space.within), textAlign = TextAlign.End, color = ThemeTokens.colors.muted, style = KobakoText.small)
+        }
+    }
+}
+
+@Composable fun transactionColor(amount: Long, type: String): Color = when { type == "transfer" || amount == 0L -> ThemeTokens.colors.ink; amount < 0 -> ThemeTokens.colors.moneyNegative; else -> ThemeTokens.colors.moneyPositive }
+
+@Composable
+fun TransactionGridRow(transaction: Transaction, date: String? = null) {
+    val config = LocalConfiguration.current
+    val categoryWidth = (config.screenWidthDp * 0.18f).dp.coerceIn(64.dp, 112.dp)
+    val transfer = transaction.type == "transfer"
+    Column(Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding)) {
+        date?.let { Text(it, color = ThemeTokens.colors.muted, style = KobakoText.small, fontWeight = FontWeight.Medium, modifier = Modifier.heightIn(min = 25.dp).padding(top = Space.within)) }
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            CategoryDot(transaction.category, color = if (transfer) ThemeTokens.colors.muted else null)
+            Text(transaction.category, modifier = Modifier.width(categoryWidth).padding(start = 8.dp), color = if (transfer) ThemeTokens.colors.muted else ThemeTokens.colors.ink, style = KobakoText.body, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Column(Modifier.weight(1f).padding(start = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(transaction.account, style = KobakoText.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(transaction.memo.orEmpty(), modifier = Modifier.weight(1f, fill = false), color = ThemeTokens.colors.muted, style = KobakoText.small, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    if (transaction.origin == "api") Text("API", Modifier.padding(start = 6.dp).background(ThemeTokens.colors.surfaceHover, RoundedCornerShape(50)).padding(horizontal = 5.dp, vertical = 1.dp), color = ThemeTokens.colors.accentStrong, style = KobakoText.micro, fontWeight = FontWeight.Bold)
+                }
+            }
+            Text(if (transaction.type == "transfer") yen(transaction.amount) else signedYen(transaction.amount), color = transactionColor(transaction.amount, transaction.type), style = KobakoText.body.copy(fontFeatureSettings = "tnum"), textAlign = TextAlign.End)
+        }
+    }
+}
+
+@Composable
+fun RecentTransactionRow(date: String, category: String, account: String, memo: String?, amount: Long, type: String, origin: String = "local") {
+    TransactionGridRow(Transaction(0L, java.time.LocalDate.now(), category, account, memo, amount, type, origin), date)
+}
+
+
+@Composable
+fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit, value: String? = null, hasChevron: Boolean = false, hasCheck: Boolean = false) {
+    val colors = ThemeTokens.colors
+    val content = if (selected) colors.accentStrong else colors.muted
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+        Row(
+            Modifier
+                .height(KobakoSize.chip)
+                .clip(RoundedCornerShape(Radius.sm))
+                .border(Stroke.hairline, if (selected) colors.accent.copy(alpha = 0.22f) else colors.rule, RoundedCornerShape(Radius.sm))
+                .background(if (selected) colors.chipSelected else Color.Transparent)
+                .clickable(onClick = onClick)
+                .padding(horizontal = Space.related),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (hasCheck) {
+                Icon(painterResource(R.drawable.ic_check), null, Modifier.size(12.dp), tint = if (selected) content else colors.muted.copy(alpha = 0.28f))
+                Spacer(Modifier.width(Space.item))
+            }
+            Text(label, color = content, style = KobakoText.small, maxLines = 1)
+            if (value != null) {
+                Spacer(Modifier.width(Space.item))
+                Text(value, color = if (selected) content else colors.ink, style = KobakoText.body, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Medium)
+            }
+            if (hasChevron) {
+                Spacer(Modifier.width(Space.item))
+                Icon(painterResource(R.drawable.ic_action_chevron_down), null, Modifier.size(10.dp), tint = content.copy(alpha = 0.8f))
+            }
+        }
+    }
+}
+
+/**
+ * A `.filters` row: the same 16px page inset, 8px gaps and 16px/8px vertical
+ * padding on every screen, so the two filter rows cannot drift apart.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun FilterBar(content: @Composable FlowRowScope.() -> Unit) {
+    FlowRow(
+        Modifier.fillMaxWidth().padding(horizontal = PageHorizontalPadding).padding(top = Space.group, bottom = Space.item),
+        horizontalArrangement = Arrangement.spacedBy(Space.item),
+        verticalArrangement = Arrangement.spacedBy(Space.item),
+        content = content,
+    )
+}
+
+/** `.filters .clear` — a text button that clears every active filter. */
+@Composable
+fun FilterClear(onClick: () -> Unit) {
+    Text(
+        "条件をクリア",
+        modifier = Modifier.clickable(onClick = onClick).height(KobakoSize.chip).wrapContentHeight(Alignment.CenterVertically).padding(horizontal = 2.dp),
+        color = ThemeTokens.colors.muted,
+        style = KobakoText.small,
+    )
+}

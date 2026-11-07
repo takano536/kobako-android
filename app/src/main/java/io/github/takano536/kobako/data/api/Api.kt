@@ -31,14 +31,32 @@ import okhttp3.MediaType.Companion.toMediaType
     val memo: String? = null,
     val amount: Long,
     val type: String,
+    val origin: String = "local",
 )
 @Serializable data class TransactionsDto(val items: List<TransactionDto>, val count: Int = 0)
+@Serializable data class FixedCostDto(
+    val id: Long,
+    val name: String,
+    val categoryName: String? = null,
+    val accountName: String,
+    val amount: String,
+    val day: Int,
+    val intervalCount: Int = 1,
+    val intervalUnit: String = "month",
+    val startMonth: String,
+)
+@Serializable data class FixedCostsDto(
+    val monthly: String,
+    val annual: String,
+    val items: List<FixedCostDto> = emptyList(),
+)
 
 interface KobakoApi {
     @GET("api/v1") suspend fun info(): ServerInfoDto
     @GET("api/v1/summary") suspend fun summary(@Query("month") month: String): SummaryDto
     @GET("api/v1/balances") suspend fun balances(): BalancesDto
     @GET("api/v1/transactions") suspend fun transactions(@Query("month") month: String): TransactionsDto
+    @GET("api/v1/fixed-costs") suspend fun fixedCosts(): FixedCostsDto
 }
 
 class BearerInterceptor(private val token: () -> String) : Interceptor {
@@ -73,4 +91,25 @@ fun TransactionDto.toDomain() = Transaction(
     memo = memo,
     amount = amount,
     type = type,
+    origin = origin,
+)
+
+fun FixedCostDto.toDomain() = FixedCost(
+    id = id,
+    name = name,
+    categoryName = categoryName,
+    accountName = accountName,
+    amount = amount.toLong(),
+    day = day,
+    intervalCount = intervalCount,
+    intervalUnit = intervalUnit,
+    // The contract is YYYY-MM-DD. Only the date prefix is significant, and malformed
+    // values become null so a bad row cannot crash the fixed-cost screen.
+    startMonth = runCatching { LocalDate.parse(startMonth.take(10)) }.getOrNull(),
+)
+
+fun FixedCostsDto.toDomain() = FixedCosts(
+    monthly = monthly.toLong(),
+    annual = annual.toLong(),
+    items = items.map(FixedCostDto::toDomain),
 )

@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-val appVersionName = "0.1.0" // x-release-please-version
+val appVersionName = "0.2.0" // x-release-please-version
 val appVersionCode = appVersionName
     .substringBefore('-')
     .split('.')

@@ -11,11 +11,12 @@ data class BalanceAccount(val id: Long, val name: String, val kind: String, val 
 data class BalanceGroup(val name: String, val systemKey: String, val accounts: List<BalanceAccount>)
 data class BalanceSummary(val assets: Long, val liabilities: Long, val net: Long)
 data class Balances(val summary: BalanceSummary, val groups: List<BalanceGroup>)
-data class Transaction(val id: Long, val occurredOn: LocalDate, val category: String, val account: String, val memo: String?, val amount: Long, val type: String)
+data class Transaction(val id: Long, val occurredOn: LocalDate, val category: String, val account: String, val memo: String?, val amount: Long, val type: String, val origin: String = "local")
 
 interface KobakoRepository {
     suspend fun connect(): Result<ServerInfo>
     suspend fun summary(month: String): Result<Summary>
     suspend fun balances(): Result<Balances>
     suspend fun transactions(month: String): Result<List<Transaction>>
+    suspend fun fixedCosts(): FixedCostsResult
 }

@@ -1,23 +1,172 @@
 package io.github.takano536.kobako.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@Immutable
+data class KobakoColors(
+    val paper: Color,
+    val ink: Color,
+    val muted: Color,
+    val accent: Color,
+    val accentStrong: Color,
+    val buttonPrimary: Color,
+    val buttonDanger: Color,
+    val moneyNegative: Color,
+    val moneyPositive: Color,
+    val categoryDot: Color,
+    val categoryBar: Color,
+    val categoryDots: List<Color>,
+    val rule: Color,
+    val bar: Color,
+    val chipSelected: Color,
+    val surface: Color,
+    val surfaceHover: Color,
+    val softControl: Color,
+    val onAccent: Color,
+)
+
+private val LightColors = KobakoColors(
+    paper = Color(0xfffcfcf8), ink = Color(0xff292e2b), muted = Color(0xff68736c),
+    accent = Color(0xff426d59), accentStrong = Color(0xff315944), buttonPrimary = Color(0xff2f6b52), buttonDanger = Color(0xffa84f45),
+    moneyNegative = Color(0xffa33a36), moneyPositive = Color(0xff245c9c), categoryDot = Color(0xff91a99d), categoryBar = Color(0xff8da597),
+    categoryDots = listOf(Color(0xff91a99d), Color(0xffb49a96), Color(0xffb0a784), Color(0xffb09eaf), Color(0xff98a6b0), Color(0xffa4b2a9), Color(0xffaaa383), Color(0xffb7b9ad)),
+    rule = Color(0xffdfe3da), bar = Color(0xffe5e9e1), chipSelected = Color(0xffe9f2e9), surface = Color(0xfff8faf5), surfaceHover = Color(0xffedf2eb), softControl = Color(0xfff0f2eb), onAccent = Color.White,
+)
+private val DarkColors = KobakoColors(
+    paper = Color(0xff1a1f1c), ink = Color(0xffe4e7e0), muted = Color(0xffa2ada5), accent = Color(0xff8cc4a6), accentStrong = Color(0xffa8d6bd),
+    buttonPrimary = Color(0xff8cc4a6), buttonDanger = Color(0xffec948a), moneyNegative = Color(0xfff2978e), moneyPositive = Color(0xff8db9ef), categoryDot = Color(0xff91a99d), categoryBar = Color(0xff6f8a7c),
+    categoryDots = listOf(Color(0xff91a99d), Color(0xffb49a96), Color(0xffb0a784), Color(0xffb09eaf), Color(0xff98a6b0), Color(0xffa4b2a9), Color(0xffaaa383), Color(0xffb7b9ad)),
+    rule = Color(0xff343d37), bar = Color(0xff2b332e), chipSelected = Color(0xff203227), surface = Color(0xff1f2521), surfaceHover = Color(0xff28302b), softControl = Color(0xff262d28), onAccent = Color(0xff142019),
+)
+private val LocalKobakoColors = staticCompositionLocalOf { LightColors }
 
 object ThemeTokens {
-    val paper = Color(0xfffcfcf8); val ink = Color(0xff292e2b); val muted = Color(0xff68736c); val accent = Color(0xff426d59); val buttonPrimary = Color(0xff2f6b52); val buttonDanger = Color(0xffa84f45); val moneyNegative = Color(0xffa33a36); val moneyPositive = Color(0xff245c9c); val rule = Color(0xffdfe3da); val surface = Color(0xfff8faf5); val surfaceHover = Color(0xffedf2eb); val softControl = Color(0xfff0f2eb)
-    val darkPaper = Color(0xff1a1f1c); val darkInk = Color(0xffe4e7e0); val darkMuted = Color(0xffa2ada5); val darkAccent = Color(0xff8cc4a6); val darkRule = Color(0xff343d37); val darkSurface = Color(0xff1f2521)
+    val colors: KobakoColors
+        @Composable get() = LocalKobakoColors.current
 }
-private val Light = lightColorScheme(primary = ThemeTokens.accent, onPrimary = Color.White, background = ThemeTokens.paper, onBackground = ThemeTokens.ink, surface = ThemeTokens.surface, onSurface = ThemeTokens.ink, outline = ThemeTokens.rule)
-private val Dark = darkColorScheme(primary = ThemeTokens.darkAccent, onPrimary = ThemeTokens.darkPaper, background = ThemeTokens.darkPaper, onBackground = ThemeTokens.darkInk, surface = ThemeTokens.darkSurface, onSurface = ThemeTokens.darkInk, outline = ThemeTokens.darkRule)
-@Composable fun KobakoTheme(theme: String, content: @Composable () -> Unit) {
+
+fun categoryDotIndex(name: String): Int = when (name) {
+    "住居" -> 0
+    "食費" -> 1
+    "日用品" -> 2
+    "娯楽" -> 3
+    "水道・光熱" -> 4
+    "交通" -> 5
+    "通信" -> 6
+    "臨時収入" -> 7
+    else -> (name.hashCode() and Int.MAX_VALUE) % 8
+}
+
+fun KobakoColors.categoryColor(name: String): Color = categoryDots[categoryDotIndex(name)]
+val KobakoTextStyle = TextStyle(
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None, LineHeightStyle.Mode.Fixed),
+)
+/**
+ * The CSS `--text-*` / `--leading-*` pairs, one entry per role. Screens pick a role
+ * instead of writing font sizes and line heights inline, so a heading and a chip
+ * cannot drift apart. `leading-none` (1.0) is deliberately absent: Compose clamps
+ * a line box below the font's natural leading, so it would not reproduce the CSS.
+ */
+object KobakoText {
+    /** h1 — `--text-title` / `--leading-tight` */
+    val title = KobakoTextStyle.copy(fontSize = 21.sp, lineHeight = 24.15.sp, fontWeight = FontWeight.Medium)
+    /** h2 — `--text-heading` / `--leading-heading` */
+    val heading = KobakoTextStyle.copy(fontSize = 15.sp, lineHeight = 19.5.sp, fontWeight = FontWeight.Medium)
+    /** body text and list rows — `--text-body` / `--leading-body` */
+    val body = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 22.4.sp)
+    /** small labels, dates, hints — `--text-small` / `--leading-meta` */
+    val small = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 17.4.sp)
+    /** smallest text — `--text-micro` / `--leading-meta` */
+    val micro = KobakoTextStyle.copy(fontSize = 11.sp, lineHeight = 16.sp)
+    /** group and column headings — `--text-small` / `--leading-heading` */
+    val meta = KobakoTextStyle.copy(fontSize = 12.sp, lineHeight = 15.6.sp, fontWeight = FontWeight.Medium)
+    /** inline label at body size — `--text-body` / `--leading-meta` */
+    val label = KobakoTextStyle.copy(fontSize = 14.sp, lineHeight = 20.3.sp)
+    /** summary amount — `--text-display` / `--leading-tight` */
+    val amountLarge = KobakoTextStyle.copy(fontSize = 26.sp, lineHeight = 29.9.sp, fontWeight = FontWeight.Medium)
+    /** secondary summary amount — `--text-label` / `--leading-tight` */
+    val amountMedium = KobakoTextStyle.copy(fontSize = 16.sp, lineHeight = 18.4.sp)
+    /** tabular figures, for columns of numbers */
+    val tabular = KobakoTextStyle.copy(fontFeatureSettings = "tnum")
+}
+
+/** The CSS spacing scale (`--space-*`). */
+object Space {
+    val within = 4.dp
+    val item = 8.dp
+    val related = 12.dp
+    val group = 16.dp
+    val section = 32.dp
+}
+
+/** The CSS radius and stroke scale (`--radius-*`, `--stroke-*`). */
+object Radius {
+    val sm = 6.dp
+    val md = 8.dp
+}
+
+object Stroke {
+    val hairline = 1.dp
+    val medium = 1.5.dp
+}
+
+/** Control sizes that repeat across screens. */
+object KobakoSize {
+    /** `.chip` — 36px tall, shared by every filter row. */
+    val chip = 36.dp
+    /** `.settings-row` / `.theme-option` — 44px minimum. */
+    val row = 44.dp
+}
+
+private val KobakoTypography = Typography(
+    displaySmall = KobakoText.amountLarge,
+    titleLarge = KobakoText.title,
+    titleMedium = KobakoText.heading,
+    titleSmall = KobakoText.body.copy(fontWeight = FontWeight.Medium),
+    bodyLarge = KobakoText.amountMedium,
+    bodyMedium = KobakoText.body,
+    bodySmall = KobakoText.small,
+    labelLarge = KobakoText.label,
+    labelMedium = KobakoText.meta,
+    labelSmall = KobakoText.micro,
+)
+
+private val LightScheme = lightColorScheme(primary = LightColors.accent, onPrimary = LightColors.onAccent, background = LightColors.paper, onBackground = LightColors.ink, surface = LightColors.surface, onSurface = LightColors.ink, outline = LightColors.rule)
+private val DarkScheme = darkColorScheme(primary = DarkColors.accent, onPrimary = DarkColors.onAccent, background = DarkColors.paper, onBackground = DarkColors.ink, surface = DarkColors.surface, onSurface = DarkColors.ink, outline = DarkColors.rule)
+
+@Composable
+fun KobakoTheme(theme: String, content: @Composable () -> Unit) {
     val dark = when (theme) {
         "dark" -> true
         "light" -> false
         else -> isSystemInDarkTheme()
     }
-    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = Typography(), content = content)
+    CompositionLocalProvider(LocalKobakoColors provides if (dark) DarkColors else LightColors, LocalTextStyle provides KobakoTextStyle) {
+        MaterialTheme(colorScheme = if (dark) DarkScheme else LightScheme, typography = KobakoTypography, content = content)
+    }
 }
-val SectionSpace = 32.dp
+
+val PageHorizontalPadding = 16.dp
+val SectionSpace = 24.dp
+val ListBottomPadding = 188.dp
+val FabSize = 56.dp
+val FabContentGap = 24.dp
+val FabContentEndPadding = PageHorizontalPadding + FabSize + FabContentGap
+val FabBottomPadding = 16.dp
